@@ -1,9 +1,9 @@
 import random
 from typing import BinaryIO, Dict, List, Optional, Tuple
 
-import image_generator
-import image_setup
-from TaggedImage import TaggedImage
+from cannedthighs import image_generator
+from cannedthighs import image_setup
+from cannedthighs.TaggedImage import TaggedImage
 
 characters: List[TaggedImage] = image_setup.images
 
@@ -24,7 +24,7 @@ class Game(object):
         self,
         num_rounds: int = 5,
         starting_radius: int = 30,
-        help_radius: int = 5,
+        help_radius: int = 30,
     ):
         self._num_rounds: int = num_rounds
         self._starting_radius: int = starting_radius
@@ -95,3 +95,7 @@ class Game(object):
     @property
     def current_round(self) -> int:
         return self._current_round
+
+    @property
+    def scores(self) -> Tuple[Tuple[int, int], ...]:
+        return tuple(self._scores.items())
