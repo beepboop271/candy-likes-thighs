@@ -33,7 +33,7 @@ async def end_game(
     # ((1, (player_id_1, score_1)), (2, (player_id_2, score_2)), ...)
     score_tuples = enumerate(sorted(game.scores, key=lambda x: x[1], reverse=True), 1)
     scores = "\n".join([
-        f"#{place}: <@{player}> {score} points" for place, (player, score) in score_tuples
+        f"#{place} <@{player}>: {score} points" for place, (player, score) in score_tuples
     ])
 
     await channel.send(f"Game Over:\n{scores}")
@@ -88,6 +88,16 @@ async def on_message(msg: discord.Message):
                 msg.channel,
                 f"Round 1: {new_game.current_radius*2} x {new_game.current_radius*2}",
                 new_game.start_round(),
+            )
+        elif args[0] == "reset":
+            if maybe_game is None:
+                await msg.channel.send("No game is taking place in this channel")
+                return
+            
+            await send_message_and_image(
+                msg.channel,
+                f"Round {maybe_game.current_round}: {maybe_game.current_radius*2} x {maybe_game.current_radius*2}",
+                maybe_game.reset_round()
             )
         elif args[0] == "expand":
             if maybe_game is None:

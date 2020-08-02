@@ -40,6 +40,13 @@ class Game(object):
     def start_round(self) -> BinaryIO:
         self._current_image = random.choice(characters)
         self._current_round += 1
+
+        return self.reset_round()
+
+    def reset_round(self) -> BinaryIO:
+        if self._current_image is None:
+            raise RuntimeError("current image was none while resetting")
+
         self._current_radius = self._starting_radius
 
         im = self._current_image.image
