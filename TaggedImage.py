@@ -2,7 +2,10 @@ from PIL import Image
 
 
 class TaggedImage(object):
-    __slots__ = ("_image", "_name")
+    __slots__ = (
+        "_image",
+        "_name",
+    )
 
     def __init__(self, image: Image.Image, name: str):
         self._image = image

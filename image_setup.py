@@ -1,7 +1,7 @@
 # kept updated with files from https://github.com/Aceship/AN-EN-Tags
-import json
 import glob
-from typing import List, Dict
+import json
+from typing import Dict, List, Set
 
 from PIL import Image
 
@@ -10,7 +10,7 @@ from TaggedImage import TaggedImage
 
 DATA_PATH = "../../AN-EN-Tags"
 
-EXCLUDE_LIST = set((
+EXCLUDE_LIST: Set[str] = set((
     "char_002_amiya_summer_1.png",
     "char_010_chen_summer.png",
     "char_107_liskam_nian#1.png",
@@ -26,8 +26,8 @@ with open(
     f"{DATA_PATH}/json/tl-akhr.json",
     encoding="utf-8",
 ) as translation_file:
-    translation = json.load(translation_file)
-    for char in translation:
+    translations = json.load(translation_file)
+    for char in translations:
         translated[char["name_cn"]] = char["name_en"]
 
 with open(
@@ -35,10 +35,11 @@ with open(
     encoding="utf-8",
 ) as data_file:
     data = json.load(data_file)
-    for key in data.keys():
-        for path in glob.glob(f"{DATA_PATH}/img/characters/{key}*"):
-            if path.rsplit("\\", 1)[1] not in EXCLUDE_LIST:
-                im = Image.open(path)
-                images.append(TaggedImage(im, translated[data[key]["name"]]))
+    for char_id in data.keys():
+        char_name = translated[data[char_id]["name"]]
+        for file_path in glob.glob(f"{DATA_PATH}/img/characters/{char_id}*"):
+            if file_path.rsplit("\\", 1)[1] not in EXCLUDE_LIST:
+                im = Image.open(file_path)
+                images.append(TaggedImage(im, char_name))
 
 print(f"{len(images)} images loaded")

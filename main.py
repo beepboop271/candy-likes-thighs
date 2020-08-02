@@ -37,24 +37,24 @@ async def on_message(message: discord.Message):
 
             if len(args) == 2:
                 try:
-                    new_game = Game(message.channel.id, int(args[1]))
+                    new_game = Game(int(args[1]))
                 except ValueError:
                     await message.channel.send(f"Unknown argument: {args[1]}")
                     return
             elif len(args) == 3:
                 try:
-                    new_game = Game(message.channel.id, int(args[1]), int(args[2]))
+                    new_game = Game(int(args[1]), int(args[2]))
                 except ValueError:
                     await message.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}")
                     return
             elif len(args) == 4:
                 try:
-                    new_game = Game(message.channel.id, int(args[1]), int(args[2]), int(args[3]))
+                    new_game = Game(int(args[1]), int(args[2]), int(args[3]))
                 except ValueError:
                     await message.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}, {args[3]}")
                     return
             else:
-                new_game = Game(message.channel.id)
+                new_game = Game()
 
             games[message.channel.id] = new_game
             buf = new_game.start_round()
@@ -89,7 +89,7 @@ async def on_message(message: discord.Message):
             else:
                 maybe_buf.seek(0)
                 await message.channel.send(
-                    f"Round {maybe_game.round}: {maybe_game.current_radius*2} x {maybe_game.current_radius*2}",
+                    f"Round {maybe_game.current_round}: {maybe_game.current_radius*2} x {maybe_game.current_radius*2}",
                     file=discord.File(maybe_buf, "canned_thighs.png"),
                 )
                 maybe_buf.close()

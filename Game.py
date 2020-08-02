@@ -1,80 +1,97 @@
 import random
-from typing import BinaryIO, List, Optional, Tuple, Dict
+from typing import BinaryIO, Dict, List, Optional, Tuple
 
-from TaggedImage import TaggedImage
-import image_setup
 import image_generator
+import image_setup
+from TaggedImage import TaggedImage
 
 characters: List[TaggedImage] = image_setup.images
 
 
 class Game(object):
+    __slots__ = (
+        "_num_rounds",
+        "_starting_radius",
+        "_help_radius",
+        "_current_image",
+        "_current_round",
+        "_current_radius",
+        "_current_position",
+        "_scores",
+    )    
+
     def __init__(
         self,
-        channel: int,
         num_rounds: int = 5,
         starting_radius: int = 30,
         help_radius: int = 5,
     ):
-        self.channel: int = channel
-        self.num_rounds: int = num_rounds
-        self.starting_radius: int = starting_radius
-        self.help_radius: int = help_radius
+        self._num_rounds: int = num_rounds
+        self._starting_radius: int = starting_radius
+        self._help_radius: int = help_radius
 
-        self.current_image: Optional[TaggedImage] = None
-        self.round = 0
-        self.current_radius: int = starting_radius
-        self.current_position: Tuple[int, int] = (0, 0)
+        self._current_image: Optional[TaggedImage] = None
+        self._current_round: int = 0
+        self._current_radius: int = starting_radius
+        self._current_position: Tuple[int, int] = (0, 0)
 
-        self.scores: Dict[int, int] = {}
+        self._scores: Dict[int, int] = {}
 
     def start_round(self) -> BinaryIO:
-        self.current_image = random.choice(characters)
-        self.round += 1
-        self.current_radius = self.starting_radius
+        self._current_image = random.choice(characters)
+        self._current_round += 1
+        self._current_radius = self._starting_radius
 
-        im = self.current_image.image
+        im = self._current_image.image
 
         buf = None
         while buf is None:
-            self.current_position = (
-                random.randint(self.starting_radius, im.width - self.starting_radius),
-                random.randint(self.starting_radius, im.height - self.starting_radius),
+            self._current_position = (
+                random.randint(self._starting_radius, im.width - self._starting_radius),
+                random.randint(self._starting_radius, im.height - self._starting_radius),
             )
             buf = image_generator.generate_if_opaque(
                 im,
-                self.starting_radius,
-                *self.current_position,
+                self._starting_radius,
+                *self._current_position,
             )
 
         return buf
 
     def get_help(self) -> BinaryIO:
-        if self.current_image is None:
+        if self._current_image is None:
             raise RuntimeError("current image was none while getting help")
 
-        self.current_radius += self.help_radius
+        self._current_radius += self._help_radius
 
         return image_generator.generate(
-            self.current_image.image,
-            self.current_radius,
-            *self.current_position,
+            self._current_image.image,
+            self._current_radius,
+            *self._current_position,
         )
 
     def verify_answer(self, answer: str) -> bool:
-        if self.current_image is None:
+        if self._current_image is None:
             raise RuntimeError("current image was none while verifying")
 
-        return self.current_image.name.lower() in answer.lower()
+        return self._current_image.name.lower() in answer.lower()
 
     def end_round(self, winner: int) -> Optional[BinaryIO]:
-        score = self.scores.get(winner)
+        score = self._scores.get(winner)
         if score is None:
-            self.scores[winner] = 1
+            self._scores[winner] = 1
         else:
-            self.scores[winner] = score+1
+            self._scores[winner] = score+1
 
-        if self.round == self.num_rounds:
+        if self._current_round == self._num_rounds:
             return None
         else:
             return self.start_round()
+
+    @property
+    def current_radius(self) -> int:
+        return self._current_radius
+
+    @property
+    def current_round(self) -> int:
+        return self._current_round
