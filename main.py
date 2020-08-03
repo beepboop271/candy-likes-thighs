@@ -15,8 +15,8 @@ games: Dict[int, Game] = {}
 
 async def send_message_and_image(
     channel: discord.channel.TextChannel,
+    buf: BinaryIO,
     content: str,
-    buf: BinaryIO
 ) -> None:
     buf.seek(0)
     await channel.send(content, file=discord.File(buf, "canned_thighs.png"))
@@ -25,18 +25,18 @@ async def send_message_and_image(
 
 async def end_game(
     channel: discord.channel.TextChannel,
-    game: Game
+    game: Game,
 ) -> None:
     # game.scores: ((player_id_1, score_1), (player_id_2, score_2), ...)
     # sort from highest score to lowest
     # enumerate with first place, second place, ...
     # ((1, (player_id_1, score_1)), (2, (player_id_2, score_2)), ...)
-    score_tuples = enumerate(sorted(game.scores, key=lambda x: x[1], reverse=True), 1)
-    scores = "\n".join([
-        f"#{place} <@{player}>: {score} points" for place, (player, score) in score_tuples
+    scores = enumerate(sorted(game.scores, key=lambda x: x[1], reverse=True), 1)
+    score_str = "\n".join([
+        f"#{place} <@{player}>: {score} points" for place, (player, score) in scores
     ])
 
-    await channel.send(f"Game Over:\n{scores}")
+    await channel.send(f"Game Over:\n{score_str}")
     del games[channel.id]
 
 
@@ -57,7 +57,7 @@ async def on_message(msg: discord.Message):
 
     if msg.content[0] == "$":
         args: List[str] = msg.content[1:].split()
-        if args[0] == "start":
+        if args[0] == "start" or args[0] == "s":
             if maybe_game is not None:
                 await msg.channel.send("A game is already taking place in this channel")
                 return
@@ -70,13 +70,13 @@ async def on_message(msg: discord.Message):
                     return
             elif len(args) == 3:
                 try:
-                    new_game = Game(int(args[1]), int(args[2]))
+                    new_game = Game(int(args[1]), float(args[2]))
                 except ValueError:
                     await msg.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}")
                     return
             elif len(args) == 4:
                 try:
-                    new_game = Game(int(args[1]), int(args[2]), int(args[3]))
+                    new_game = Game(int(args[1]), float(args[2]), float(args[3]))
                 except ValueError:
                     await msg.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}, {args[3]}")
                     return
@@ -86,30 +86,30 @@ async def on_message(msg: discord.Message):
             games[msg.channel.id] = new_game
             await send_message_and_image(
                 msg.channel,
-                f"Round 1: {new_game.current_radius*2} x {new_game.current_radius*2}",
                 new_game.start_round(),
+                f"Round 1: {round(new_game.current_percentage, 2)}% of image",
             )
-        elif args[0] == "reset":
-            if maybe_game is None:
-                await msg.channel.send("No game is taking place in this channel")
-                return
-            
-            await send_message_and_image(
-                msg.channel,
-                f"Round {maybe_game.current_round}: {maybe_game.current_radius*2} x {maybe_game.current_radius*2}",
-                maybe_game.reset_round()
-            )
-        elif args[0] == "expand":
+        elif args[0] == "reset" or args[0] == "r":
             if maybe_game is None:
                 await msg.channel.send("No game is taking place in this channel")
                 return
 
             await send_message_and_image(
                 msg.channel,
-                f"{maybe_game.current_radius*2} x {maybe_game.current_radius*2}:",
-                maybe_game.get_help(),
+                maybe_game.reset_round(),
+                f"Round {maybe_game.current_round}: {round(maybe_game.current_percentage, 2)}% of image",
             )
-        elif args[0] == "quit":
+        elif args[0] == "expand" or args[0] == "e":
+            if maybe_game is None:
+                await msg.channel.send("No game is taking place in this channel")
+                return
+
+            await send_message_and_image(
+                msg.channel,
+                maybe_game.get_help(),
+                f"{round(maybe_game.current_percentage, 2)}% of image:",
+            )
+        elif args[0] == "quit" or args[0] == "q":
             if maybe_game is None:
                 await msg.channel.send("No game is taking place in this channel")
                 return
@@ -126,8 +126,8 @@ async def on_message(msg: discord.Message):
             else:
                 await send_message_and_image(
                     msg.channel,
-                    f"Round {maybe_game.current_round}: {maybe_game.current_radius*2} x {maybe_game.current_radius*2}",
                     maybe_buf,
+                    f"Round {maybe_game.current_round}: {round(maybe_game.current_percentage, 2)}% of image",
                 )
 
 
