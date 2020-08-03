@@ -1,3 +1,4 @@
+import asyncio
 import random
 from typing import BinaryIO, Dict, List, Optional, Tuple
 
@@ -18,6 +19,7 @@ class Game(object):
         "_expansion_count",
         "_current_position",
         "_scores",
+        "_expand_lock",
     )
 
     def __init__(
@@ -36,6 +38,8 @@ class Game(object):
         self._current_position: Tuple[int, int] = (0, 0)
 
         self._scores: Dict[int, int] = {}
+
+        self._expand_lock: asyncio.Lock = asyncio.Lock()
 
     def start_round(self) -> BinaryIO:
         self._current_image = random.choice(characters)
@@ -81,7 +85,7 @@ class Game(object):
 
     def verify_answer(self, answer: str) -> bool:
         if self._current_image is None:
-            raise RuntimeError("current image was none while verifying")
+            return False
 
         return self._current_image.name.lower() in answer.lower()
 
@@ -93,6 +97,8 @@ class Game(object):
             self._scores[winner] = score+1
 
         if self._current_round == self._num_rounds:
+            # end the game
+            self._current_image = None
             return None
         else:
             return self.start_round()
@@ -110,6 +116,10 @@ class Game(object):
     @property
     def current_round(self) -> int:
         return self._current_round
+
+    @property
+    def expand_lock(self) -> asyncio.Lock:
+        return self._expand_lock
 
     @property
     def scores(self) -> Tuple[Tuple[int, int], ...]:

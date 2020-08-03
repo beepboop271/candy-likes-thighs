@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import BinaryIO, Dict, List
 
@@ -104,11 +105,17 @@ async def on_message(msg: discord.Message):
                 await msg.channel.send("No game is taking place in this channel")
                 return
 
-            await send_message_and_image(
-                msg.channel,
-                maybe_game.get_help(),
-                f"{round(maybe_game.current_percentage, 2)}% of image:",
-            )
+            if maybe_game.expand_lock.locked():
+                return
+
+            async with maybe_game.expand_lock:
+                await send_message_and_image(
+                    msg.channel,
+                    maybe_game.get_help(),
+                    f"{round(maybe_game.current_percentage, 2)}% of image:",
+                )
+                # maintain the lock for 1 second
+                await asyncio.sleep(1)
         elif args[0] == "quit" or args[0] == "q":
             if maybe_game is None:
                 await msg.channel.send("No game is taking place in this channel")
@@ -117,10 +124,10 @@ async def on_message(msg: discord.Message):
             await end_game(msg.channel, maybe_game)
     elif maybe_game is not None:
         if maybe_game.verify_answer(msg.content):
+            maybe_buf = maybe_game.end_round(msg.author.id)
+
             quote = "\n".join((f"> {line}" for line in msg.content.split("\n")))
             await msg.channel.send(f"{quote}\n<@{msg.author.id}> got the answer")
-
-            maybe_buf = maybe_game.end_round(msg.author.id)
             if maybe_buf is None:
                 await end_game(msg.channel, maybe_game)
             else:
