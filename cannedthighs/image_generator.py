@@ -11,7 +11,7 @@ def center_and_nudge(
     base_width: int,
     base_height: int,
 ) -> Tuple[int, int, int, int]:
-    half_size = int(crop_size/2)  # guaranteed to be whole
+    half_size = int(crop_size/2)  # crop_size guaranteed to be even
     rect_lx = crop_x-half_size
     rect_ly = crop_y-half_size
     rect_ux = crop_x+half_size
@@ -19,23 +19,23 @@ def center_and_nudge(
 
     if crop_size >= base_width:
         rect_lx = 0
-        rect_ux = base_width-1
+        rect_ux = base_width
     elif rect_lx < 0:
         rect_ux += abs(rect_lx)
         rect_lx = 0
-    elif rect_ux >= base_width:
-        rect_lx -= rect_ux-base_width+1
-        rect_ux = base_width-1
+    elif rect_ux > base_width:
+        rect_lx -= rect_ux-base_width
+        rect_ux = base_width
 
     if crop_size >= base_height:
         rect_ly = 0
-        rect_uy = base_height-1
+        rect_uy = base_height
     elif rect_ly < 0:
         rect_uy += abs(rect_ly)
         rect_ly = 0
-    elif rect_uy >= base_height:
-        rect_ly -= rect_uy-base_height+1
-        rect_uy = base_height-1
+    elif rect_uy > base_height:
+        rect_ly -= rect_uy-base_height
+        rect_uy = base_height
 
     return (
         rect_lx, rect_ly,

@@ -87,7 +87,7 @@ class Game(object):
         if self._current_image is None:
             return False
 
-        return self._current_image.name.lower() in answer.lower()
+        return answer.lower() in self._current_image
 
     def end_round(self, winner: int) -> Optional[BinaryIO]:
         score = self._scores.get(winner)

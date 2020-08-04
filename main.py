@@ -4,10 +4,9 @@ from typing import BinaryIO, Dict, List
 
 import discord
 import dotenv
+dotenv.load_dotenv()
 
 from cannedthighs.Game import Game
-
-dotenv.load_dotenv()
 
 client = discord.Client()
 
@@ -56,7 +55,7 @@ async def on_message(msg: discord.Message):
 
     maybe_game = games.get(msg.channel.id)
 
-    if msg.content[0] == "$":
+    if msg.content[0] == "&" and len(msg.content) > 1:
         args: List[str] = msg.content[1:].split()
         if args[0] == "start" or args[0] == "s":
             if maybe_game is not None:
@@ -88,7 +87,7 @@ async def on_message(msg: discord.Message):
             await send_message_and_image(
                 msg.channel,
                 new_game.start_round(),
-                f"Round 1: {round(new_game.current_percentage, 2)}% of image",
+                "Round 1:",
             )
         elif args[0] == "reset" or args[0] == "r":
             if maybe_game is None:
@@ -98,7 +97,7 @@ async def on_message(msg: discord.Message):
             await send_message_and_image(
                 msg.channel,
                 maybe_game.reset_round(),
-                f"Round {maybe_game.current_round}: {round(maybe_game.current_percentage, 2)}% of image",
+                f"Round {maybe_game.current_round}:",
             )
         elif args[0] == "expand" or args[0] == "e":
             if maybe_game is None:
@@ -112,7 +111,7 @@ async def on_message(msg: discord.Message):
                 await send_message_and_image(
                     msg.channel,
                     maybe_game.get_help(),
-                    f"{round(maybe_game.current_percentage, 2)}% of image:",
+                    "",
                 )
                 # maintain the lock for 1 second
                 await asyncio.sleep(1)
@@ -134,7 +133,7 @@ async def on_message(msg: discord.Message):
                 await send_message_and_image(
                     msg.channel,
                     maybe_buf,
-                    f"Round {maybe_game.current_round}: {round(maybe_game.current_percentage, 2)}% of image",
+                    f"Round {maybe_game.current_round}:",
                 )
 
 
