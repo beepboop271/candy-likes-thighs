@@ -1,12 +1,11 @@
 import asyncio
-import os
 from typing import BinaryIO, Dict, List
 
 import discord
-import dotenv
-dotenv.load_dotenv()
 
+import cannedthighs
 from cannedthighs.Game import Game
+
 
 client = discord.Client()
 
@@ -18,8 +17,7 @@ async def send_message_and_image(
     buf: BinaryIO,
     content: str,
 ) -> None:
-    buf.seek(0)
-    await channel.send(content, file=discord.File(buf, "canned_thighs.png"))
+    await channel.send(content, file=discord.File(buf, cannedthighs.FILE_NAME))
     buf.close()
 
 
@@ -27,16 +25,7 @@ async def end_game(
     channel: discord.channel.TextChannel,
     game: Game,
 ) -> None:
-    # game.scores: ((player_id_1, score_1), (player_id_2, score_2), ...)
-    # sort from highest score to lowest
-    # enumerate with first place, second place, ...
-    # ((1, (player_id_1, score_1)), (2, (player_id_2, score_2)), ...)
-    scores = enumerate(sorted(game.scores, key=lambda x: x[1], reverse=True), 1)
-    score_str = "\n".join([
-        f"#{place} <@{player}>: {score} points" for place, (player, score) in scores
-    ])
-
-    await channel.send(f"Game Over:\n{score_str}")
+    await channel.send(f"Game Over:\n{str(game)}")
     del games[channel.id]
 
 
@@ -72,13 +61,17 @@ async def on_message(msg: discord.Message):
                 try:
                     new_game = Game(int(args[1]), float(args[2]))
                 except ValueError:
-                    await msg.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}")
+                    await msg.channel.send(
+                        f"At least one unknown argument: {args[1]}, {args[2]}"
+                    )
                     return
             elif len(args) == 4:
                 try:
                     new_game = Game(int(args[1]), float(args[2]), float(args[3]))
                 except ValueError:
-                    await msg.channel.send(f"At least one unknown argument: {args[1]}, {args[2]}, {args[3]}")
+                    await msg.channel.send(
+                        f"At least one unknown argument: {args[1]}, {args[2]}, {args[3]}"
+                    )
                     return
             else:
                 new_game = Game()
@@ -121,12 +114,28 @@ async def on_message(msg: discord.Message):
                 return
 
             await end_game(msg.channel, maybe_game)
+        elif args[0] == "view" or args[0] == "v":
+            if maybe_game is None:
+                await msg.channel.send("No game is taking place in this channel")
+                return
+
+            await send_message_and_image(
+                msg.channel,
+                maybe_game.view_image(),
+                "",
+            )
+        elif args[0] == "score":
+            if maybe_game is None:
+                await msg.channel.send("No game is taking place in this channel")
+                return
+
+            await msg.channel.send(str(maybe_game))
     elif maybe_game is not None:
         if maybe_game.verify_answer(msg.content):
             maybe_buf = maybe_game.end_round(msg.author.id)
 
-            quote = "\n".join((f"> {line}" for line in msg.content.split("\n")))
-            await msg.channel.send(f"{quote}\n<@{msg.author.id}> got the answer")
+            first_line = msg.content.split("\n", 1)[0]
+            await msg.channel.send(f"> {first_line}\n<@{msg.author.id}> got the answer")
             if maybe_buf is None:
                 await end_game(msg.channel, maybe_game)
             else:
@@ -137,4 +146,4 @@ async def on_message(msg: discord.Message):
                 )
 
 
-client.run(os.getenv("DISCORD_BOT_TOKEN"))
+client.run(cannedthighs.DISCORD_BOT_TOKEN)

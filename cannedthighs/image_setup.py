@@ -6,12 +6,17 @@ from typing import Dict, List, Set, Tuple
 
 from PIL import Image
 
+import cannedthighs
 from cannedthighs.TaggedImage import TaggedImage
 
 
-DATA_PATH = "../../AN-EN-Tags"
+#######
+# part of the code and not configurable because there
+# is no reason to change these
 
-EXCLUDE_LIST: Set[str] = set((
+# images that are in the character folder but are only
+# used in the story, not actual character images
+_EXCLUDE_LIST: Set[str] = set((
     "char_002_amiya_summer_1.png",
     "char_010_chen_summer.png",
     "char_107_liskam_nian#1.png",
@@ -19,71 +24,88 @@ EXCLUDE_LIST: Set[str] = set((
     "char_284_spot_otaku#1.png",
 ))
 
-TRANSLATION_OVERRIDE: Dict[str, str] = {
+# names that are written with the cyrillic alphabet
+# which need to be converted to latin
+_TRANSLATION_OVERRIDES: Dict[str, str] = {
     "古米": "gummy",
     "真理": "istina",
     "早露": "rosa",
     "凛冬": "zima",
 }
+#######
 
-with open("name_aliases.json") as alias_file:
-    MANUAL_ALIASES: Dict[str, Tuple[str, ...]] = json.load(alias_file)
+
+_TRANSLATIONS: Dict[str, str] = {}
+
+with open("name_aliases.json", encoding="utf-8") as _alias_file:
+    _ALIASES: Dict[str, Tuple[str, ...]] = json.load(_alias_file)
 
 images: List[TaggedImage] = []
 
-translated: Dict[str, str] = {}
 
-with open(
-    f"{DATA_PATH}/json/tl-akhr.json",
-    encoding="utf-8",
-) as translation_file:
-    translations = json.load(translation_file)
-    for char in translations:
-        # tl-akhr translates to the cyrillic, so override for the real english
-        if char["name_cn"] in TRANSLATION_OVERRIDE:
-            translated[char["name_cn"]] = TRANSLATION_OVERRIDE[char["name_cn"]]
+def _load_translations() -> None:
+    with open(
+        f"{cannedthighs.DATA_PATH}/json/tl-akhr.json",
+        encoding="utf-8",
+    ) as translation_file:
+        characters = json.load(translation_file)
+
+    for char in characters:
+        cn_name = char["name_cn"]
+        # tl-akhr translates to the cyrillic,
+        # so override to get latin alphabet
+        if cn_name in _TRANSLATION_OVERRIDES:
+            _TRANSLATIONS[cn_name] = _TRANSLATION_OVERRIDES[cn_name]
         else:
-            translated[char["name_cn"].lower()] = char["name_en"].lower()
+            # some chinese names are written in latin characters
+            # e.g. Lancet-2, so lowercase it. lowercase the en
+            # names too so that everything is stored lowercase
+            _TRANSLATIONS[cn_name.lower()] = char["name_en"].lower()
 
-with open(
-    f"{DATA_PATH}/json/gamedata/zh_CN/gamedata/excel/character_table.json",
-    encoding="utf-8",
-) as data_file:
-    data = json.load(data_file)
-    for char_id in data.keys():
-        try:
-            cn_name = data[char_id]["name"].lower()
-            en_name = translated[cn_name]
-            try:
-                aliases = MANUAL_ALIASES[en_name]
-            except KeyError:
-                # data files are automatically updated, while
-                # alias file is not, so warn when the alias file
-                # is out of date
-                print(f"missing alias entry for {en_name}")
-                aliases = ()
-            for file_path in glob.glob(f"{DATA_PATH}/img/characters/{char_id}*"):
-                if file_path.rsplit("\\", 1)[1] not in EXCLUDE_LIST:
-                    im = Image.open(file_path)
-                    images.append(TaggedImage(
-                        im,
-                        (en_name, cn_name, *aliases),
-                    ))
-        except KeyError:
-            # if a KeyError is thrown, there wouldn't have been
-            # any files returned by the glob, so do nothing
-            pass
 
-print(f"{len(images)} images parsed")
+def _load_character(cn_name: str, char_id: str) -> None:
+    en_name = _TRANSLATIONS.get(cn_name)
+    # there are some objects in the data file
+    # which are not actual characters. these objects
+    # will not have any corresponding images or
+    # translation, so don't bother trying to load them.
+    if en_name is None:
+        return
 
-# non-lazy loading of images:
-# pillow doesn't read the file until the image is actually used, which
-# means the bot will slowly increase memory usage as more operators are
-# shown. if you want to load all the images at the start, add a variable
-# to the .env file called PRELOAD_IMAGES and set it to anything.
-# note that it will take up about 2.8 gigs of ram to preload.
-if os.getenv("PRELOAD_IMAGES") is not None:
-    for img in images:
-        img.image.load()
+    aliases = _ALIASES.get(en_name)
+    if aliases is None:
+        # data files are automatically updated, while
+        # alias file is not, so warn when the alias file
+        # is out of date
+        print(f"missing alias entry for {en_name}")
+        aliases = ()
 
-    print("all images loaded")
+    for img_path in glob.glob(f"{cannedthighs.DATA_PATH}/img/characters/{char_id}*"):
+        if os.path.basename(img_path) not in _EXCLUDE_LIST:
+            images.append(TaggedImage(
+                Image.open(img_path),
+                (en_name, cn_name, *aliases),
+            ))
+
+
+def _load_images() -> None:
+    with open(
+        f"{cannedthighs.DATA_PATH}/json/gamedata/zh_CN/gamedata/excel/character_table.json",
+        encoding="utf-8",
+    ) as data_file:
+        characters = json.load(data_file)
+
+    for char_id, char in characters.items():
+        _load_character(char["name"].lower(), char_id)
+
+    print(f"{len(images)} images parsed")
+
+    # see note in cannedthighs/__init__.py
+    if cannedthighs.PRELOAD_IMAGES:
+        for img in images:
+            img.image.load()
+        print("all images loaded")
+
+
+_load_translations()
+_load_images()

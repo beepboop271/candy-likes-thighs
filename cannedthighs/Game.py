@@ -1,22 +1,22 @@
 import asyncio
+import cannedthighs
 import random
-from typing import BinaryIO, Dict, List, Optional, Tuple
+from typing import BinaryIO, Dict, Optional, Tuple
 
 from cannedthighs import image_generator
 from cannedthighs import image_setup
 from cannedthighs.TaggedImage import TaggedImage
 
-characters: List[TaggedImage] = image_setup.images
-
 
 class Game(object):
     __slots__ = (
-        "_num_rounds",
-        "_starting_percentage",
-        "_help_coeff",
+        "_NUM_ROUNDS",
+        "_PERCENTAGE_SHIFT",
+        "_EXPANSION_COEFF",
         "_current_image",
         "_current_round",
         "_expansion_count",
+        "_reset_count",
         "_current_position",
         "_scores",
         "_expand_lock",
@@ -24,64 +24,92 @@ class Game(object):
 
     def __init__(
         self,
-        num_rounds: int = 5,
-        starting_percentage: float = 0.15,
-        help_coeff: float = 0.3,
+        num_rounds: int = cannedthighs.DEFAULT_ROUNDS,
+        percentage_shift: float = cannedthighs.DEFAULT_SHIFT,
+        help_coeff: float = cannedthighs.DEFAULT_COEFF,
     ):
-        self._num_rounds: int = num_rounds
-        self._starting_percentage: float = starting_percentage
-        self._help_coeff: float = help_coeff
+        self._NUM_ROUNDS: int = num_rounds
+        self._PERCENTAGE_SHIFT: float = percentage_shift
+        self._EXPANSION_COEFF: float = help_coeff
 
         self._current_image: Optional[TaggedImage] = None
         self._current_round: int = 0
-        self._expansion_count: float = 0
+        self._expansion_count: int = 0
+        self._reset_count: int = 0
         self._current_position: Tuple[int, int] = (0, 0)
 
         self._scores: Dict[int, int] = {}
 
         self._expand_lock: asyncio.Lock = asyncio.Lock()
 
+    def __str__(self) -> str:
+        # game.scores: ((player_id_1, score_1), (player_id_2, score_2), ...)
+        # sort from highest score to lowest
+        # enumerate with first place, second place, ...
+        # ((1, (player_id_1, score_1)), (2, (player_id_2, score_2)), ...)
+        scores = enumerate(
+            sorted(
+                self._scores.items(),
+                key=lambda x: x[1],
+                reverse=True
+            ),
+            1,
+        )
+        score_str = "\n".join([
+            f"#{place} <@{player}>: {score} points"
+            for place, (player, score) in scores
+        ])
+        return f"Round {self._current_round}/{self._NUM_ROUNDS}\n{score_str}"
+
     def start_round(self) -> BinaryIO:
-        self._current_image = random.choice(characters)
+        self._current_image = random.choice(image_setup.images)
         self._current_round += 1
 
         return self.reset_round()
+
+    def get_help(self) -> BinaryIO:
+        self._expansion_count += 1
+
+        return self.view_image()
 
     def reset_round(self) -> BinaryIO:
         if self._current_image is None:
             raise RuntimeError("current image was none while resetting")
 
         self._expansion_count = 0
+        self._reset_count += 1
         size = self._current_image.get_size_from_percentage(self.current_percentage)
+        half_size = size//2
 
         im = self._current_image.image
 
-        buf = None
-        while buf is None:
+        img_buf = None
+        while img_buf is None:
             self._current_position = (
-                random.randint(0, im.width),
-                random.randint(0, im.height),
+                random.randint(half_size, im.width-half_size),
+                random.randint(half_size, im.height-half_size),
             )
-            buf = image_generator.generate_if_opaque(
+            img_buf = image_generator.generate_if_opaque(
                 im,
                 size,
                 *self._current_position,
             )
 
-        return buf
+        return img_buf
 
-    def get_help(self) -> BinaryIO:
+    def view_image(self) -> BinaryIO:
         if self._current_image is None:
-            raise RuntimeError("current image was none while getting help")
+            raise RuntimeError("current image was none while getting image")
 
-        self._expansion_count += 1
         size = self._current_image.get_size_from_percentage(self.current_percentage)
 
-        return image_generator.generate(
+        img_buf = image_generator.generate(
             self._current_image.image,
             size,
             *self._current_position,
         )
+
+        return img_buf
 
     def verify_answer(self, answer: str) -> bool:
         if self._current_image is None:
@@ -90,27 +118,23 @@ class Game(object):
         return answer.lower() in self._current_image
 
     def end_round(self, winner: int) -> Optional[BinaryIO]:
-        score = self._scores.get(winner)
-        if score is None:
-            self._scores[winner] = 1
-        else:
-            self._scores[winner] = score+1
+        self._scores[winner] = self._scores.get(winner, 0) + 1
 
-        if self._current_round == self._num_rounds:
+        if self._current_round == self._NUM_ROUNDS:
             # end the game
             self._current_image = None
             return None
-        else:
-            return self.start_round()
+
+        return self.start_round()
 
     @property
     def current_percentage(self) -> float:
         return min(
             100,
 
-            self._help_coeff
+            self._EXPANSION_COEFF
             * (2**self._expansion_count + self._expansion_count**2)
-            + self._starting_percentage,
+            + self._PERCENTAGE_SHIFT,
         )
 
     @property
@@ -120,7 +144,3 @@ class Game(object):
     @property
     def expand_lock(self) -> asyncio.Lock:
         return self._expand_lock
-
-    @property
-    def scores(self) -> Tuple[Tuple[int, int], ...]:
-        return tuple(self._scores.items())
