@@ -1,0 +1,66 @@
+{
+    "optimized": [
+        {
+            "maxsize": 400,
+            "format": "webp",
+            "reduce": 1,
+            "args": {
+                "lossless": true,
+                "quality": 50,
+                "method": 0
+            }
+        },
+        {
+            "maxsize": 1000,
+            "format": "webp",
+            "reduce": 1,
+            "args": {
+                "lossless": false,
+                "quality": 70,
+                "method": 0
+            }
+        },
+        {
+            "maxsize": -1,
+            "format": "webp",
+            "reduce": 2,
+            "args": {
+                "lossless": false,
+                "quality": 70,
+                "method": 0
+            }
+        }
+    ],
+    "tiny": [
+        {
+            "maxsize": 500,
+            "format": "webp",
+            "reduce": 1,
+            "args": {
+                "lossless": false,
+                "quality": 70,
+                "method": 0
+            }
+        },
+        {
+            "maxsize": 1000,
+            "format": "webp",
+            "reduce": 2,
+            "args": {
+                "lossless": false,
+                "quality": 60,
+                "method": 0
+            }
+        },
+        {
+            "maxsize": -1,
+            "format": "webp",
+            "reduce": 4,
+            "args": {
+                "lossless": false,
+                "quality": 60,
+                "method": 0
+            }
+        }
+    ]
+}

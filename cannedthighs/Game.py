@@ -1,11 +1,15 @@
 import asyncio
-import cannedthighs
 import random
-from typing import BinaryIO, Dict, Optional, Tuple
+import time
+from typing import Dict, Optional, TYPE_CHECKING, Tuple
 
+import cannedthighs
 from cannedthighs import image_generator
 from cannedthighs import image_setup
 from cannedthighs.TaggedImage import TaggedImage
+
+if TYPE_CHECKING:
+    import discord
 
 
 class Game(object):
@@ -13,34 +17,37 @@ class Game(object):
         "_NUM_ROUNDS",
         "_PERCENTAGE_SHIFT",
         "_EXPANSION_COEFF",
+        "_IMAGE_MODE",
         "_current_image",
         "_current_round",
         "_expansion_count",
-        "_reset_count",
         "_current_position",
         "_scores",
-        "_expand_lock",
+        "_render_lock",
     )
 
     def __init__(
         self,
         num_rounds: int = cannedthighs.DEFAULT_ROUNDS,
+        *,
         percentage_shift: float = cannedthighs.DEFAULT_SHIFT,
-        help_coeff: float = cannedthighs.DEFAULT_COEFF,
+        expansion_coeff: float = cannedthighs.DEFAULT_COEFF,
+        image_mode: str = cannedthighs.DEFAULT_FORMAT,
     ):
         self._NUM_ROUNDS: int = num_rounds
         self._PERCENTAGE_SHIFT: float = percentage_shift
-        self._EXPANSION_COEFF: float = help_coeff
+        self._EXPANSION_COEFF: float = expansion_coeff
+        self._IMAGE_MODE: str = image_mode
 
         self._current_image: Optional[TaggedImage] = None
         self._current_round: int = 0
         self._expansion_count: int = 0
-        self._reset_count: int = 0
         self._current_position: Tuple[int, int] = (0, 0)
 
         self._scores: Dict[int, int] = {}
 
-        self._expand_lock: asyncio.Lock = asyncio.Lock()
+        # to prevent spamming of image loading
+        self._render_lock: asyncio.Lock = asyncio.Lock()
 
     def __str__(self) -> str:
         # game.scores: ((player_id_1, score_1), (player_id_2, score_2), ...)
@@ -61,28 +68,29 @@ class Game(object):
         ])
         return f"Round {self._current_round}/{self._NUM_ROUNDS}\n{score_str}"
 
-    def start_round(self) -> BinaryIO:
+    def start_round(self) -> "discord.File":
         self._current_image = random.choice(image_setup.images)
         self._current_round += 1
 
         return self.reset_round()
 
-    def get_help(self) -> BinaryIO:
+    def get_help(self) -> "discord.File":
         self._expansion_count += 1
 
         return self.view_image()
 
-    def reset_round(self) -> BinaryIO:
+    def reset_round(self) -> "discord.File":
         if self._current_image is None:
             raise RuntimeError("current image was none while resetting")
 
         self._expansion_count = 0
-        self._reset_count += 1
         size = self._current_image.get_size_from_percentage(self.current_percentage)
         half_size = size//2
 
         im = self._current_image.image
 
+        s = time.perf_counter_ns()
+        n = 0
         img_buf = None
         while img_buf is None:
             self._current_position = (
@@ -91,23 +99,31 @@ class Game(object):
             )
             img_buf = image_generator.generate_if_opaque(
                 im,
+                self._IMAGE_MODE,
                 size,
                 *self._current_position,
             )
+            n += 1
+        e = time.perf_counter_ns()
+        print(f"new {size}: {n}, {(e-s)/1000000} ms, {img_buf.fp.getbuffer().nbytes/1000} KB")
 
         return img_buf
 
-    def view_image(self) -> BinaryIO:
+    def view_image(self) -> "discord.File":
         if self._current_image is None:
             raise RuntimeError("current image was none while getting image")
 
         size = self._current_image.get_size_from_percentage(self.current_percentage)
 
+        s = time.perf_counter_ns()
         img_buf = image_generator.generate(
             self._current_image.image,
+            self._IMAGE_MODE,
             size,
             *self._current_position,
         )
+        e = time.perf_counter_ns()
+        print(f"{size}: {(e-s)/1000000} ms, {img_buf.fp.getbuffer().nbytes/1000} KB")
 
         return img_buf
 
@@ -117,7 +133,7 @@ class Game(object):
 
         return answer.lower() in self._current_image
 
-    def end_round(self, winner: int) -> Optional[BinaryIO]:
+    def end_round(self, winner: int) -> Optional["discord.File"]:
         self._scores[winner] = self._scores.get(winner, 0) + 1
 
         if self._current_round == self._NUM_ROUNDS:
@@ -142,5 +158,5 @@ class Game(object):
         return self._current_round
 
     @property
-    def expand_lock(self) -> asyncio.Lock:
-        return self._expand_lock
+    def render_lock(self) -> asyncio.Lock:
+        return self._render_lock

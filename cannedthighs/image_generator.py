@@ -1,6 +1,7 @@
 import io
 from typing import Optional, Tuple
 
+import discord
 from PIL import Image
 
 import cannedthighs
@@ -57,43 +58,57 @@ def _get_opaque_percentage(im: Image.Image) -> float:
     )
 
 
-def _get_buffer(im: Image.Image) -> io.BytesIO:
-    # s = time.perf_counter_ns()
+def _get_file(im: Image.Image, mode: str) -> discord.File:
+    render_settings = cannedthighs.FILE_FORMATS[mode]
+
     img_buf = io.BytesIO(b"")
-    if im.width < 400 and im.height < 400:
-        im.save(img_buf, "webp", lossless=True, quality=50, method=0)
-    elif im.width < 1000 and im.height < 1000:
-        im.save(img_buf, "webp", lossless=False, quality=70, method=0)
+    dim = max(im.width, im.height)
+
+    for setting in render_settings:
+        size = setting["maxsize"]
+        if size == -1 or dim < size:
+            reduce = setting["reduce"]
+            if reduce > 1:
+                im = im.reduce(reduce)
+            img_format = setting["format"]
+            im.save(img_buf, img_format, **setting["args"])
+            break
     else:
-        # half the size first
-        im.reduce(2).save(img_buf, "webp", lossless=False, quality=70, method=0)
-    # e = time.perf_counter_ns()
-    # print(f"test: {(e-s)/1000000} ms, {img_buf.getbuffer().nbytes/1000} kb")
+        # else of for loop is executed when loop
+        # ends without hitting a break, i.e. no
+        # appropriate setting was found
+        print("no appropriate setting was found (didn't end format list with maxsize: -1?)")
+        # default to this so at least *some* image
+        # comes out, even if it's not intended
+        img_format = "webp"
+        im.save(img_buf, img_format, lossless=False, quality=70, method=0)
 
     # seek back to the start after writing to the
     # buffer, allowing a reader to read the buffer
     img_buf.seek(0)
-    return img_buf
+    return discord.File(img_buf, f"{cannedthighs.FILE_NAME}.{img_format}")
 
 
 def generate(
     base: Image.Image,
+    mode: str,
     size: int,
     x: int, y: int,
-) -> io.BytesIO:
+) -> discord.File:
     cropped = base.crop(_center_and_nudge(x, y, size, base.width, base.height))
 
-    return _get_buffer(cropped)
+    return _get_file(cropped, mode)
 
 
 def generate_if_opaque(
     base: Image.Image,
+    mode: str,
     size: int,
     x: int, y: int,
-) -> Optional[io.BytesIO]:
+) -> Optional[discord.File]:
     cropped = base.crop(_center_and_nudge(x, y, size, base.width, base.height))
 
     if _get_opaque_percentage(cropped) < cannedthighs.OPAQUE_THRESHOLD:
         return None
 
-    return _get_buffer(cropped)
+    return _get_file(cropped, mode)

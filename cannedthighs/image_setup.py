@@ -2,7 +2,7 @@
 import glob
 import json
 import os
-from typing import Dict, List, Set, Tuple
+from typing import Dict, FrozenSet, List, Tuple
 
 from PIL import Image
 
@@ -14,9 +14,9 @@ from cannedthighs.TaggedImage import TaggedImage
 # part of the code and not configurable because there
 # is no reason to change these
 
-# images that are in the character folder but are only
-# used in the story, not actual character images
-_EXCLUDE_LIST: Set[str] = set((
+# images that are in the character folder but are
+# only used in the story, not actual character images
+_EXCLUDE_LIST: FrozenSet[str] = frozenset((
     "char_002_amiya_summer_1.png",
     "char_010_chen_summer.png",
     "char_107_liskam_nian#1.png",
@@ -37,7 +37,7 @@ _TRANSLATION_OVERRIDES: Dict[str, str] = {
 
 _TRANSLATIONS: Dict[str, str] = {}
 
-with open("name_aliases.json", encoding="utf-8") as _alias_file:
+with open(cannedthighs.ALIAS_FILE_PATH, encoding="utf-8") as _alias_file:
     _ALIASES: Dict[str, Tuple[str, ...]] = json.load(_alias_file)
 
 images: List[TaggedImage] = []
@@ -63,7 +63,7 @@ def _load_translations() -> None:
             _TRANSLATIONS[cn_name.lower()] = char["name_en"].lower()
 
 
-def _load_character(cn_name: str, char_id: str) -> None:
+def _load_character(char_id: str, cn_name: str) -> None:
     en_name = _TRANSLATIONS.get(cn_name)
     # there are some objects in the data file
     # which are not actual characters. these objects
@@ -84,7 +84,7 @@ def _load_character(cn_name: str, char_id: str) -> None:
         if os.path.basename(img_path) not in _EXCLUDE_LIST:
             images.append(TaggedImage(
                 Image.open(img_path),
-                (en_name, cn_name, *aliases),
+                en_name, cn_name, *aliases,
             ))
 
 
@@ -96,7 +96,7 @@ def _load_images() -> None:
         characters = json.load(data_file)
 
     for char_id, char in characters.items():
-        _load_character(char["name"].lower(), char_id)
+        _load_character(char_id, char["name"].lower())
 
     print(f"{len(images)} images parsed")
 

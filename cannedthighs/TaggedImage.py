@@ -1,5 +1,5 @@
 import math
-from typing import Any, Iterable, Set
+from typing import Any, Set
 
 from PIL import Image
 
@@ -10,7 +10,7 @@ class TaggedImage(object):
         "_names",
     )
 
-    def __init__(self, image: Image.Image, names: Iterable[str]):
+    def __init__(self, image: Image.Image, *names: str):
         self._image = image
         self._names: Set[str] = set(names)
 
@@ -21,7 +21,8 @@ class TaggedImage(object):
         return other in self._names
 
     def get_size_from_percentage(self, area_percentage: float) -> int:
-        area = (area_percentage/100) * (self._image.width*self._image.height)
+        square_size = max(self._image.width, self._image.height)
+        area = (area_percentage/100) * (square_size*square_size)
         ceil = math.ceil(math.sqrt(area))
         if (ceil & 1) == 1:
             return ceil-1
