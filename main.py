@@ -25,7 +25,6 @@ async def send_message_and_image(
     image_file: discord.File,
     content: str,
 ) -> None:
-    # await channel.send(content, file=discord.File(buf, cannedthighs.FILE_NAME))
     await channel.send(content, file=image_file)
     image_file.close()
     image_file.fp.close()
