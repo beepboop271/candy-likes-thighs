@@ -10,35 +10,19 @@ import cannedthighs
 from cannedthighs.TaggedImage import TaggedImage
 
 
-#######
-# part of the code and not configurable because there
-# is no reason to change these
-
-# images that are in the character folder but are
-# only used in the story, not actual character images
-_EXCLUDE_LIST: FrozenSet[str] = frozenset((
-    "char_002_amiya_summer_1.png",
-    "char_010_chen_summer.png",
-    "char_107_liskam_nian#1.png",
-    "char_235_jesica_nian#1.png",
-    "char_284_spot_otaku#1.png",
-))
-
-# names that are written with the cyrillic alphabet
-# which need to be converted to latin
-_TRANSLATION_OVERRIDES: Dict[str, str] = {
-    "古米": "gummy",
-    "真理": "istina",
-    "早露": "rosa",
-    "凛冬": "zima",
-}
-#######
-
-
-_TRANSLATIONS: Dict[str, str] = {}
+with open(cannedthighs.IMAGE_SETUP_PATH, encoding="utf-8") as _setup_data_file:
+    _setup_data = json.load(_setup_data_file)
+    # images that are in the character folder but are
+    # only used in the story, not actual character images
+    _EXCLUDE_LIST: FrozenSet[str] = frozenset(_setup_data["excludeList"])
+    # names that are written with the cyrillic alphabet
+    # which need to be converted to latin
+    _TRANSLATION_OVERRIDES: Dict[str, str] = _setup_data["translationOverrides"]
 
 with open(cannedthighs.ALIAS_FILE_PATH, encoding="utf-8") as _alias_file:
     _ALIASES: Dict[str, Tuple[str, ...]] = json.load(_alias_file)
+
+_TRANSLATIONS: Dict[str, str] = {}
 
 images: List[TaggedImage] = []
 

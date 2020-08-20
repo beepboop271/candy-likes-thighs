@@ -1,0 +1,15 @@
+{
+  "excludeList": [
+    "char_002_amiya_summer_1.png",
+    "char_010_chen_summer.png",
+    "char_107_liskam_nian#1.png",
+    "char_235_jesica_nian#1.png",
+    "char_284_spot_otaku#1.png"
+  ],
+  "translationOverrides": {
+    "古米": "gummy",
+    "真理": "istina",
+    "早露": "rosa",
+    "凛冬": "zima"
+  }
+}

@@ -8,10 +8,9 @@ mypy = "*"
 flake8 = "*"
 
 [packages]
-python-dotenv = "*"
 pillow = "*"
-flask = "*"
-gunicorn = "*"
+"discord.py" = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.8"

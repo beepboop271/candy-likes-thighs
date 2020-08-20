@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Callable, Dict, List, Literal, Optional, TypeVar
+from typing import Any, Callable, Dict, List, Literal, TypeVar
 
 import dotenv
 dotenv.load_dotenv()
@@ -9,15 +9,21 @@ dotenv.load_dotenv()
 _T = TypeVar('_T')
 
 
-def _convert_if_not_none(
-    value: Optional[str],
+def _get_env(
+    key: str,
     converter: Callable[[str], _T],
     default: _T,
 ) -> _T:
-    if value is None:
+    setting = os.getenv(key)
+
+    if setting is None:
         return default
 
-    return converter(value)
+    try:
+        return converter(setting)
+    except ValueError:
+        print(f"could not convert {key}={setting}, using default {default}")
+        return default
 
 
 # mandatory variables
@@ -71,11 +77,13 @@ DATA_PATH: str = _data_path
 # want to load all the images at the start, set this
 # variable to anything. Leaving it unset means that
 # Pillow should lazy-load the images. Note that it
-# will take up about 2.8 gigs of ram to preload.
+# will take up about 2.8 gigs of ram to preload
 #
 FILE_NAME: str = os.getenv("FILE_NAME", "canned_thighs")
 
 ALIAS_FILE_PATH: str = os.getenv("ALIAS_PATH", "name_aliases.json")
+
+IMAGE_SETUP_PATH: str = os.getenv("SETUP_PATH", "image_setup.json")
 
 _FORMAT_FILE_PATH: str = os.getenv("FORMAT_PATH", "formats.json")
 _FormatName = str
@@ -125,26 +133,10 @@ PRELOAD_IMAGES: bool = False if os.getenv("PRELOAD_IMAGES") is None else True
 #
 DEFAULT_FORMAT = os.getenv("DEFAULT_FORMAT", "optimized")
 
-OPAQUE_THRESHOLD: float = _convert_if_not_none(
-    os.getenv("OPAQUE_THRESHOLD"),
-    float,
-    0.5,
-)
+OPAQUE_THRESHOLD: float = _get_env("OPAQUE_THRESHOLD", float, 0.5)
 
-DEFAULT_ROUNDS: int = _convert_if_not_none(
-    os.getenv("DEFAULT_ROUNDS"),
-    int,
-    5,
-)
+DEFAULT_ROUNDS: int = _get_env("DEFAULT_ROUNDS", int, 5)
 
-DEFAULT_SHIFT: float = _convert_if_not_none(
-    os.getenv("DEFAULT_SHIFT"),
-    float,
-    0.15,
-)
+DEFAULT_SHIFT: float = _get_env("DEFAULT_SHIFT", float, 0.15)
 
-DEFAULT_COEFF: float = _convert_if_not_none(
-    os.getenv("DEFAULT_COEFF"),
-    float,
-    0.3,
-)
+DEFAULT_COEFF: float = _get_env("DEFAULT_COEFF", float, 0.3)

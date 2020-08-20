@@ -17,7 +17,7 @@ def _center_and_nudge(
     # create a rect of width `crop_size` centered around
     # `(crop_x, crop_y)`, ensuring that it stays within
     # the rect `(0, 0, base_width, base_height)`
-    half_size = int(crop_size/2)  # crop_size guaranteed to be even
+    half_size = crop_size//2  # note: crop_size guaranteed to be even
     rect_lx = crop_x-half_size
     rect_ly = crop_y-half_size
     rect_ux = crop_x+half_size
