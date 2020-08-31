@@ -17,6 +17,7 @@ commands: FrozenSet[str] = frozenset((
     "view", "v",
     "score",
     "quit", "q",
+    "reload",
 ))
 
 
@@ -93,7 +94,7 @@ async def on_message(msg: discord.Message):
                     await msg.channel.send(f"Unknown argument: {args[1]}")
                     return
             elif len(args) == 3:
-                if args[2] not in cannedthighs.FILE_FORMATS:
+                if args[2] not in cannedthighs.conf.file_formats:
                     await msg.channel.send(f"Unknown argument: {args[2]}")
                     return
                 try:
@@ -110,6 +111,14 @@ async def on_message(msg: discord.Message):
                 new_game.start_round(),
                 "Round 1:",
             )
+            return
+
+        if args[0] == "reload":
+            if msg.author.id == cannedthighs.conf.bot_owner:
+                cannedthighs.conf.update(len(args) > 1)
+                await msg.channel.send("Updated config")
+            else:
+                await msg.channel.send("Only the bot owner can reload the bot's config")
             return
 
         # by now, args[0] must be expand, view, score, or quit:
@@ -150,4 +159,4 @@ async def on_message(msg: discord.Message):
                 )
 
 
-client.run(cannedthighs.DISCORD_BOT_TOKEN)
+client.run(cannedthighs.conf.discord_token)

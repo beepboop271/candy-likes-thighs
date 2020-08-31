@@ -15,8 +15,6 @@ if TYPE_CHECKING:
 class Game(object):
     __slots__ = (
         "_NUM_ROUNDS",
-        "_PERCENTAGE_SHIFT",
-        "_EXPANSION_COEFF",
         "_IMAGE_MODE",
         "_current_image",
         "_current_round",
@@ -28,15 +26,16 @@ class Game(object):
 
     def __init__(
         self,
-        num_rounds: int = cannedthighs.DEFAULT_ROUNDS,
+        num_rounds: Optional[int] = None,
         *,
-        percentage_shift: float = cannedthighs.DEFAULT_SHIFT,
-        expansion_coeff: float = cannedthighs.DEFAULT_COEFF,
-        image_mode: str = cannedthighs.DEFAULT_FORMAT,
+        image_mode: Optional[str] = None,
     ):
+        if num_rounds is None:
+            num_rounds = cannedthighs.conf.default_rounds
+        if image_mode is None:
+            image_mode = cannedthighs.conf.default_format
+
         self._NUM_ROUNDS: int = num_rounds
-        self._PERCENTAGE_SHIFT: float = percentage_shift
-        self._EXPANSION_COEFF: float = expansion_coeff
         self._IMAGE_MODE: str = image_mode
 
         self._current_image: Optional[TaggedImage] = None
@@ -84,7 +83,7 @@ class Game(object):
             raise RuntimeError("current image was none while resetting")
 
         self._expansion_count = 0
-        size = self._current_image.get_size_from_percentage(self.current_percentage)
+        size = cannedthighs.conf.get_size(self._expansion_count)
         half_size = size//2
 
         im = self._current_image.image
@@ -113,7 +112,7 @@ class Game(object):
         if self._current_image is None:
             raise RuntimeError("current image was none while getting image")
 
-        size = self._current_image.get_size_from_percentage(self.current_percentage)
+        size = cannedthighs.conf.get_size(self._expansion_count)
 
         s = time.perf_counter_ns()
         img_buf = image_generator.generate(
@@ -142,16 +141,6 @@ class Game(object):
             return None
 
         return self.start_round()
-
-    @property
-    def current_percentage(self) -> float:
-        return min(
-            100,
-
-            self._EXPANSION_COEFF
-            * (2**self._expansion_count + self._expansion_count**2)
-            + self._PERCENTAGE_SHIFT,
-        )
 
     @property
     def current_round(self) -> int:

@@ -1,5 +1,4 @@
 /.vscode
-/gamedata/images
 
 .mypy_cache
 __pycache__
@@ -9,3 +8,5 @@ node_modules
 dist
 
 *.env
+
+/gamedata/images

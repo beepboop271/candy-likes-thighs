@@ -1,10 +1,28 @@
 {
-  "excludeList": [
+  "excludeCharacterList": [
+    "pith",
+    "reserve (melee)",
+    "reserve (sniper)",
+    "reserve (logistic)",
+    "reserve (caster)",
+    "sharp",
+    "stormeye",
+    "touch"
+  ],
+  "excludeImageList": [
     "char_002_amiya_summer_1.png",
     "char_010_chen_summer.png",
     "char_107_liskam_nian#1.png",
     "char_235_jesica_nian#1.png",
-    "char_284_spot_otaku#1.png"
+    "char_284_spot_otaku#1.png",
+    "char_504_rguard_1.png",
+    "char_505_rcast_1.png",
+    "char_506_rmedic_1.png",
+    "char_507_rsnipe_1.png",
+    "char_508_aguard_1.png",
+    "char_509_acast_1.png",
+    "char_510_amedic_1.png",
+    "char_511_asnipe_1.png"
   ],
   "translationOverrides": {
     "古米": "gummy",

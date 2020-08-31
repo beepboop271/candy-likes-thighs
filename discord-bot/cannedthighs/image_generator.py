@@ -59,7 +59,7 @@ def _get_opaque_percentage(im: Image.Image) -> float:
 
 
 def _get_file(im: Image.Image, mode: str) -> discord.File:
-    render_settings = cannedthighs.FILE_FORMATS[mode]
+    render_settings = cannedthighs.conf.file_formats[mode]
 
     img_buf = io.BytesIO(b"")
     dim = max(im.width, im.height)
@@ -86,7 +86,7 @@ def _get_file(im: Image.Image, mode: str) -> discord.File:
     # seek back to the start after writing to the
     # buffer, allowing a reader to read the buffer
     img_buf.seek(0)
-    return discord.File(img_buf, f"{cannedthighs.FILE_NAME}.{img_format}")
+    return discord.File(img_buf, f"{cannedthighs.conf.file_name}.{img_format}")
 
 
 def generate(
@@ -108,7 +108,7 @@ def generate_if_opaque(
 ) -> Optional[discord.File]:
     cropped = base.crop(_center_and_nudge(x, y, size, base.width, base.height))
 
-    if _get_opaque_percentage(cropped) < cannedthighs.OPAQUE_THRESHOLD:
+    if _get_opaque_percentage(cropped) < cannedthighs.conf.opaque_threshold:
         return None
 
     return _get_file(cropped, mode)

@@ -5,7 +5,7 @@
 # padding (i.e. gets rid of excess transparent pixels)
 
 # exmple usage:
-# $ python image_formatter.py "../AN-EN-Tags" "./images"
+# $ python image_formatter.py "../AN-EN-Tags" "images"
 #          ^                  ^               ^
 # name of script              |               |
 # path to the base folder of AN-EN-Tags       |
@@ -32,7 +32,7 @@ SOURCE, DEST = sys.argv[1:]
 
 # don't process/output files specified here
 with open("image_setup.json", encoding="utf-8") as setup_data:
-    EXCLUDE: FrozenSet[str] = frozenset(json.load(setup_data)["excludeList"])
+    EXCLUDE: FrozenSet[str] = frozenset(json.load(setup_data)["excludeImageList"])
 
 images: List[Tuple[Image.Image, str]] = []
 
@@ -154,12 +154,13 @@ def crop(im: Image.Image) -> Image.Image:
 
 def save(images: List[Tuple[Image.Image, str]]):
     for im, name in images:
-        # example name: char_002_amiya_1.png
-        # first 5 characters are always "char_", so,
-        # search for the next "_" to cut off the char
-        # number. also remove "#" character (found in
-        # skin names)
-        name = name[name.index("_", 5) + 1:].replace("#", "")
+        # example name: char_002_amiya_epoque#4.png
+        # remove the #4 (# and a number) found in
+        # skin names
+        try:
+            name = f"{name[:name.index('#')]}.png"
+        except ValueError:
+            pass
 
         # remove "+" character (only used for amiya's e1 art)
         if name == "amiya_1+.png":

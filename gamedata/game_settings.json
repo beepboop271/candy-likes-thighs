@@ -1,0 +1,11 @@
+{
+  "default_format": "optimized",
+  "default_rounds": 10,
+  "expansion_equation": {
+    "degree": 2,
+    "coeffs": [9],
+    "start": [0, 69],
+    "end": [9, 1104]
+  },
+  "opaque_threshold": 0.5
+}
