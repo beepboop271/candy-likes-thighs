@@ -5,7 +5,6 @@ from typing import Dict, Optional, TYPE_CHECKING, Tuple
 
 import cannedthighs
 from cannedthighs import image_generator
-from cannedthighs import image_setup
 from cannedthighs.TaggedImage import TaggedImage
 
 if TYPE_CHECKING:
@@ -68,7 +67,7 @@ class Game(object):
         return f"Round {self._current_round}/{self._NUM_ROUNDS}\n{score_str}"
 
     def start_round(self) -> "discord.File":
-        self._current_image = random.choice(image_setup.images)
+        self._current_image = random.choice(cannedthighs.conf.images)
         self._current_round += 1
 
         return self.reset_round()

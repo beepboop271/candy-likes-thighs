@@ -3,6 +3,9 @@ import os
 from typing import Any, Callable, Dict, List, Literal
 
 import dotenv
+
+from cannedthighs import image_setup
+
 dotenv.load_dotenv()
 
 
@@ -197,6 +200,7 @@ class _Config(object):
         "_image_setup_file",
         "_file_formats",
         "_get_size",
+        "_images",
         "__dict__",
     )
 
@@ -250,7 +254,7 @@ class _Config(object):
         self.__dict__.update(**settings)
 
         if reloadImages:
-            print("hi")
+            self._images = image_setup.get_images(self)
 
     @property
     def discord_token(self):
@@ -295,6 +299,10 @@ class _Config(object):
     @property
     def get_size(self):
         return self._get_size
+
+    @property
+    def images(self):
+        return self._images
 
 
 conf = _Config()
