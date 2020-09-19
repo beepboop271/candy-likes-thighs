@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>
+    Candy Likes Thighs - An Arknights Image Guessing Game
+  </title>
+  <script src="js/enter.js" defer></script>
+</head>
+<body>
+  <noscript>
+    <h1>
+      JavaScript is required to run this game
+    </h1>
+  </noscript>
+  <h1>
+    Join Game
+  </h1>
+  <form id="enter-form">
+    <label for="player-name">Your display name:</label>
+    <br>
+    <input type="text" id="player-name" name="playerName">
+    <span id="player-name-error"></span>
+    <br>
+
+    <input type="button" id="form-submit" value="Enter" onclick="enterInvite()" disabled>
+    <br>
+    <span id="submit-error"></span>
+  </form>
+  <hr>
+  <a href="/game.html">Click here if you were already in a game and accidentally left.</a>
+  <hr>
+  <p>
+    Player names must be between 1 and 50 characters in length and can contain
+    alphanumeric characters (a-z, A-Z, 0-9), as well as hyphens, underscores, or
+    spaces.
+  </p>
+  <hr>
+  <small>
+    i literally don't know anything about frontend but i swear the backend is
+    quite good
+  </small>
+</body>
+</html>
