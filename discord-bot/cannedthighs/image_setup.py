@@ -55,16 +55,16 @@ def get_images(conf) -> List[TaggedImage]:
     # load images
     images: List[TaggedImage] = []
 
-    def _load_character(char_id: str, cn_name: str) -> None:
+    def _load_character(char_id: str, cn_name: str) -> bool:
         en_name = TRANSLATIONS.get(cn_name)
         # there are some objects in the data file
         # which are not actual characters. these objects
         # will not have any corresponding images or
         # translation, so don't bother trying to load them.
         if en_name is None:
-            return
+            return False
         if en_name in EXCLUDE_CHAR_LIST:
-            return
+            return False
 
         aliases = ALIASES.get(en_name)
         if aliases is None:
@@ -74,12 +74,15 @@ def get_images(conf) -> List[TaggedImage]:
             print(f"missing alias entry for {en_name}")
             aliases = ()
 
+        num_loaded = 0
         for img_path in glob.glob(f"{conf.image_path}/{char_id}*"):
             if os.path.basename(img_path) not in EXCLUDE_IMG_LIST:
                 images.append(TaggedImage(
                     Image.open(img_path),
                     en_name, cn_name, *aliases,
                 ))
+                num_loaded += 1
+        return num_loaded > 0
 
     with open(
         conf.character_list_file,
@@ -87,8 +90,17 @@ def get_images(conf) -> List[TaggedImage]:
     ) as data_file:
         characters = json.load(data_file)
 
+    loaded = set()
     for char_id, char in characters.items():
-        _load_character(char_id, char["name"].lower())
+        if _load_character(char_id, char["name"].lower()):
+            loaded.add(char_id)
+
+    for img_path in glob.glob(f"{conf.image_path}/*"):
+        name = os.path.basename(img_path)
+        # char_1234_abcd_...
+        # ^^^^^^^^^^^^^^
+        if name[:name.index("_", name.index("_", 5)+1)] not in loaded:
+            print(f"skipped {name}")
 
     print(f"{len(images)} images parsed")
 
