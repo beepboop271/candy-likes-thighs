@@ -162,9 +162,13 @@ def save(images: List[Tuple[Image.Image, str]]):
         except ValueError:
             pass
 
-        # remove "+" character (only used for amiya's e1 art)
-        if name == "amiya_1+.png":
-            name = "amiya_1_2.png"
+        if name == "char_002_amiya_1+.png":
+            # remove "+" character
+            name = "char_002_amiya_e1.png"
+        elif name == "char_1001_amiya2_2.png":
+            # amiya doesn't have a different alter name in
+            # game files so change her id to the original
+            name = "char_002_amiya_guard2.png"
 
         im.save(f"{DEST}/{name}", FORMAT)
 
