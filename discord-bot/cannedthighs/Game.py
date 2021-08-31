@@ -131,8 +131,9 @@ class Game(object):
 
         return answer.lower() in self._current_image
 
-    def end_round(self, winner: int) -> Optional["discord.File"]:
-        self._scores[winner] = self._scores.get(winner, 0) + 1
+    def end_round(self, winner: Optional[int]) -> Optional["discord.File"]:
+        if winner is not None:
+            self._scores[winner] = self._scores.get(winner, 0) + 1
 
         if self._current_round == self._NUM_ROUNDS:
             # end the game

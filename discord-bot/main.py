@@ -15,6 +15,7 @@ commands: FrozenSet[str] = frozenset((
     "start", "s",
     "expand", "e",
     "view", "v",
+    "giveup", "g",
     "score",
     "quit", "q",
     "reload",
@@ -139,6 +140,17 @@ async def on_message(msg: discord.Message):
                 maybe_game.render_lock,
                 maybe_game.view_image,
             )
+        elif args[0] == "giveup" or args[0] == "g":
+            maybe_buf = maybe_game.end_round(None)
+            await msg.channel.send("skipped round")
+            if maybe_buf is None:
+                await end_game(msg.channel, maybe_game)
+            else:
+                await send_message_and_image(
+                    msg.channel,
+                    maybe_buf,
+                    f"Round {maybe_game.current_round}:",
+                )
         elif args[0] == "score":
             await msg.channel.send(str(maybe_game))
         elif args[0] == "quit" or args[0] == "q":
