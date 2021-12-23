@@ -6,7 +6,7 @@ const chatBox = document.getElementById("chat-box");
 const scores = new Map();
 const ws = new WebSocket("ws://127.0.0.1:8000");
 ws.onerror = () => {
-  title.innerText = "Error connecting to game server. Are you in a game?";
+  title.innerHTML = "<h1>Error connecting to game server. Are you in a game?</h1>\n<a href=..>Return to homepage</a>";
 };
 ws.onopen = () => {
   ws.onerror = () => {
@@ -14,8 +14,9 @@ ws.onopen = () => {
   };
 };
 
-chatBox.onkeyup = function (ev) {
+chatBox.onkeydown = function (ev) {
   if (ev.key == "Enter" && !ev.shiftKey) {
+    ev.preventDefault()
     const msg = this.value.trim();
     this.value = "";
     if (msg.length > 0) {
@@ -27,17 +28,13 @@ chatBox.onkeyup = function (ev) {
   }
 }
 
-function cleanPlayer(player) {
-  return player.replace(/ +/g, ".");
-}
-
 function addNewPlayer(player, score) {
-  playerList.innerHTML += `<div id="player-${cleanPlayer(player)}" style="order:${score};">${player}:<br>${score} points</div>`;
+  playerList.innerHTML += `<div id="player-${player}" style="order:${score};">${player}:<br>${score} points</div>`;
   scores.set(player, score);
 }
 
 function updatePlayer(player, score) {
-  const element = document.getElementById(`player-${cleanPlayer(player)}`);
+  const element = document.getElementById(`player-${player}`);
   element.style.order = score;
   element.innerHTML = `${player}:<br>${score} points`;
   scores.set(player, score);
@@ -45,7 +42,7 @@ function updatePlayer(player, score) {
 
 function removePlayer(player) {
   document
-    .getElementById(`player-${cleanPlayer(player)}`)
+    .getElementById(`player-${player}`)
     .remove();
   scores.delete(player);
 }

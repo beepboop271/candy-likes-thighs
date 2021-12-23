@@ -18,13 +18,12 @@ function maybeSubmit(ev) {
   }
 }
 
-// i'd rather use optional chaining but its a fairly new feature
 if (document.getElementById("game-name") !== null) {
   document.getElementById("game-name").onkeyup = function (ev) {
     const id = this.value;
     gameNameBad = true;
-  
-    if (id.length > 0 && id.length < 4) {
+
+    if (id.length < 4) {
       gameErrorSpan.textContent = "Name is too short";
       submitButton.disabled = true;
       return;
@@ -50,7 +49,7 @@ if (document.getElementById("player-name") !== null) {
   document.getElementById("player-name").onkeyup = function (ev) {
     const id = this.value.trim();
     playerNameBad = true;
-  
+
     if (id.length < 1) {
       playerErrorSpan.textContent = "Name is too short";
       submitButton.disabled = true;
@@ -61,7 +60,7 @@ if (document.getElementById("player-name") !== null) {
       submitButton.disabled = true;
       return;
     }
-    if (!(/^[a-zA-Z0-9\-_ ]+$/.test(id))) {
+    if (!(/^[a-zA-Z0-9\-_]+$/.test(id))) {
       playerErrorSpan.textContent = "Name contains invalid characters";
       submitButton.disabled = true;
       return;
