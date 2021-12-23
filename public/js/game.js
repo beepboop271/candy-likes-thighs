@@ -93,7 +93,7 @@ ws.onmessage = function(e) {
       }
       break;
     case "player-disappear":
-      removePlayer(msg.data);
+      removePlayer(msg.data.player);
       break;
   }
 }
