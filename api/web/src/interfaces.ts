@@ -60,12 +60,20 @@ interface PlayerDisappearMessage extends Message {
   };
 }
 
+interface NewHostMessage extends Message {
+  message: "new-host";
+  data: {
+    player: string;
+  };
+}
+
 // messages only sent from the client
 export type ClientMessage =
   | ChatSendMessage;
 
 // messages only sent from the server
 export type ServerMessage =
+  | NewHostMessage
   | ChatReceiveMessage
   | PlayerDisappearMessage
   | InitPlayerListMessage

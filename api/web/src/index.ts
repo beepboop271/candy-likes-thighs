@@ -81,7 +81,7 @@ app.post("/enter", async (req, res): Promise<void> => {
   // hash that means the game already exists, so join it
   // (use hsetnx instead of an exists...hset so that it is atomic)
   if (await redis.hsetnx(gameKey, "currentRound", 0) === 0) {
-    if (await redis.sadd(`${gameKey}:players`, playerName) === 0) {
+    if (await redis.hsetnx(`${gameKey}:scores`, playerName, 0) === 0) {
       fail(res, 422, "Game exists, name taken");
       return;
     }
@@ -97,8 +97,8 @@ app.post("/enter", async (req, res): Promise<void> => {
   success(res);
 
   await redis.pipeline()
-    .hset(gameKey, "numRounds", 10, "host", playerName)
-    .sadd(`${gameKey}:players`, playerName)
+    .hset(gameKey, "numRounds", 10)
+    .hset(`${gameKey}:scores`, playerName, 0)
     .exec();
 });
 
@@ -143,7 +143,8 @@ server.on(
 wsServer.on("connection", (ws, req: Session): void => {
   debug("websocket success");
   const client = new Client(ws, req);
-  client.on("end", (): void => { console.log("end"); });
+  client.on("end", (): void => { console.log("user end"); });
+  client.on("start", (): void => { console.log("user game start"); });
 });
 
 server.listen(port, (): void => { console.log("started"); });
