@@ -2,7 +2,7 @@
 // most users won't ever need the server to
 // yell at them for having symbols in their
 // names
-let gameNameBad = false;
+let gameNameBad = true;
 const gameErrorSpan = document.getElementById("game-name-error");
 
 let playerNameBad = true;
@@ -18,57 +18,36 @@ function maybeSubmit(ev) {
   }
 }
 
+function nameIsBad(text, span, minLength) {
+  if (text.length < minLength) {
+    span.textContent = "Name is too short";
+  } else if (text.length > 50) {
+    span.textContent = "Name is too long";
+  } else if (!(/^[a-zA-Z0-9\-_]+$/.test(text))) {
+    span.textContent = "Name contains invalid characters";
+  } else {
+    span.textContent = "";
+    return false;
+  }
+  submitButton.disabled = true;
+  return true;
+}
+
 if (document.getElementById("game-name") !== null) {
   document.getElementById("game-name").onkeyup = function (ev) {
-    const id = this.value;
-    gameNameBad = true;
-
-    if (id.length < 4) {
-      gameErrorSpan.textContent = "Name is too short";
-      submitButton.disabled = true;
-      return;
+    gameNameBad = nameIsBad(this.value, gameErrorSpan, 4);
+    if (!gameNameBad) {
+      maybeSubmit(ev);
     }
-    if (id.length > 50) {
-      gameErrorSpan.textContent = "Name is too long";
-      submitButton.disabled = true;
-      return;
-    }
-    if (!(/^[a-zA-Z0-9\-_]*$/.test(id))) {
-      gameErrorSpan.textContent = "Name contains invalid characters";
-      submitButton.disabled = true;
-      return;
-    }
-    // no error
-    gameNameBad = false;
-    gameErrorSpan.textContent = "";
-    maybeSubmit(ev);
   }
 }
 
 if (document.getElementById("player-name") !== null) {
   document.getElementById("player-name").onkeyup = function (ev) {
-    const id = this.value.trim();
-    playerNameBad = true;
-
-    if (id.length < 1) {
-      playerErrorSpan.textContent = "Name is too short";
-      submitButton.disabled = true;
-      return;
+    playerNameBad = nameIsBad(this.value, playerErrorSpan, 1);
+    if (!playerNameBad) {
+      maybeSubmit(ev);
     }
-    if (id.length > 50) {
-      playerErrorSpan.textContent = "Name is too long";
-      submitButton.disabled = true;
-      return;
-    }
-    if (!(/^[a-zA-Z0-9\-_]+$/.test(id))) {
-      playerErrorSpan.textContent = "Name contains invalid characters";
-      submitButton.disabled = true;
-      return;
-    }
-    // no error
-    playerNameBad = false;
-    playerErrorSpan.textContent = "";
-    maybeSubmit(ev);
   }
 }
 
