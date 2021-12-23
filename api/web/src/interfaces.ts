@@ -70,3 +70,10 @@ export type ServerMessage =
   | PlayerDisappearMessage
   | InitPlayerListMessage
   | PlayerEnterMessage;
+
+declare module "express-session" {
+  interface SessionData {
+      gameName?: string;
+      playerName?: string;
+  }
+}

@@ -54,12 +54,6 @@ const success = (res: express.Response): void => {
 };
 
 app.post("/enter", async (req, res): Promise<void> => {
-  if (req.session === undefined) {
-    // never happens?
-    fail(res, 500, "help");
-    return;
-  }
-
   let { gameName, playerName } = req.body as EnterGameRequest;
 
   if (playerName === undefined) {
@@ -103,7 +97,6 @@ app.post("/enter", async (req, res): Promise<void> => {
   success(res);
 
   await redis.pipeline()
-    // @ts-expect-error - types for ioredis do not have variadic hset yet
     .hset(gameKey, "numRounds", 10, "host", playerName)
     .sadd(`${gameKey}:players`, playerName)
     .exec();
