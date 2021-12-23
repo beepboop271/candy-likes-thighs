@@ -3,7 +3,7 @@ import ioredis from "ioredis";
 import websocket from "ws";
 
 import { debug, redis } from "./constants";
-import { IClientMessage, ISession, IServerMessage } from "./interfaces";
+import { ClientMessage, ServerMessage, Session } from "./interfaces";
 
 export class Client extends EventEmitter {
   public readonly ws: websocket;
@@ -11,7 +11,7 @@ export class Client extends EventEmitter {
   public readonly gameName: string;
   public readonly playerName: string;
 
-  public constructor(ws: websocket, req: ISession) {
+  public constructor(ws: websocket, req: Session) {
     super();
     this.ws = ws;
     this.sub = new ioredis();
@@ -27,16 +27,13 @@ export class Client extends EventEmitter {
 
     this.ws.on("close", async (_code, _reason): Promise<void> => {
       debug(`${this.playerName} closed connection`);
-      // don't destroy their data, in case they
-      // lost connection and want to join back
-      // to the game
-      // if multiple servers were running the game,
-      // the client could reconnect to any one of
-      // them, so don't persist any data in the web
-      // server, only redis
+      // don't destroy their data, in case they lost connection
+      // and want to join back to the game
       await this.broadcast({
-        data: this.playerName,
         message: "player-disappear",
+        data: {
+          player: this.playerName,
+        },
       });
 
       // only re-assign the host
@@ -45,28 +42,39 @@ export class Client extends EventEmitter {
       //
       // }
 
-      this.terminate();
+      await this.terminate();
     });
 
     this.ws.on("message", async (data): Promise<void> => {
       debug(`${this.playerName} received browser: ${data.toString()}`);
-      const msg = JSON.parse(data.toString()) as IClientMessage;
+      const msg = JSON.parse(data.toString()) as ClientMessage;
       debug(msg.message);
       switch (msg.message) {
-        case "chat-message":
-          this.broadcast({
+        case "chat-send":
+          await this.broadcast({
+            message: "chat-receive",
             data: {
               author: this.playerName,
-              text: msg.data,
+              text: msg.data.text,
             },
-            message: "chat-message",
           });
           break;
         default:
           // unknown type
-          this.close(1008);
+          await this.close(1008);
       }
     });
+  }
+
+  public async close(code: number): Promise<void> {
+    this.ws.close(code);
+    await this.sub.quit();
+    this.emit("end");
+  }
+  public async terminate(): Promise<void> {
+    this.ws.terminate();
+    await this.sub.quit();
+    this.emit("end");
   }
 
   private async enterGame(): Promise<void> {
@@ -87,8 +95,10 @@ export class Client extends EventEmitter {
           throw err;
         }
         this.message({
-          data: scores,
           message: "init-player-list",
+          data: Object.fromEntries(Object.entries(scores).map(
+            ([player, score]): [string, number] => [player, Number(score)],
+          )),
         });
       })
       // set their score to 0 if joining for first time
@@ -102,36 +112,28 @@ export class Client extends EventEmitter {
           ? 0  // the key did not exit, so the score must have been set to 0
           : Number(await redis.hget(scoreKey, this.playerName));  // the key exists
         await this.broadcast({
-          data: { [this.playerName]: score },
           message: "player-enter",
+          data: {
+            player: this.playerName,
+            score,
+          },
         });
       })
       .exec();
   }
 
-  private message(message: string | IServerMessage): void {
+  private message(message: string | ServerMessage): void {
     if (typeof message === "string") {
       this.ws.send(message);
     } else {
       this.ws.send(JSON.stringify(message));
     }
   }
-  private async broadcast(message: string | IServerMessage): Promise<void> {
+  private async broadcast(message: string | ServerMessage): Promise<void> {
     if (typeof message === "string") {
       await redis.publish(this.gameName, message);
     } else {
       await redis.publish(this.gameName, JSON.stringify(message));
     }
-  }
-
-  public async close(code: number): Promise<void> {
-    this.ws.close(code);
-    await this.sub.quit();
-    this.emit("end");
-  }
-  public async terminate(): Promise<void> {
-    this.ws.terminate();
-    await this.sub.quit();
-    this.emit("end");
   }
 }

@@ -9,8 +9,9 @@
     "cyclomatic-complexity": false,
     "no-console": false,
     "no-magic-numbers": false,
-    "no-non-null-assertion": false, // typescript is not always able to know, which is the whole point of the assertion operator
+    "no-non-null-assertion": false,  // typescript is not always able to know, which is the whole point of the assertion operator
     "no-unbound-method": false,
+    "object-literal-sort-keys": false,  // declaration order setting is pretty bad at checking
     "prefer-function-over-method": false,
 
     // warning
@@ -18,6 +19,7 @@
 
     // always active
     "increment-decrement": false,
+    "interface-name": [true, "never-prefix"],
     "linebreak-style": false,  // git takes care of this
     "match-default-export-name": false,
     "max-classes-per-file": false,
@@ -26,7 +28,7 @@
     "newline-per-chained-call": false,
     "no-bitwise": false,
     "no-object-literal-type-assertion": [true, { "allow-arguments": true }],  // lol schema is wrong, this works fine
-    "object-literal-sort-keys": [true, "match-declaration-order"],
+    "semicolon": [true, "always"],
     "switch-default": false,
     "trailing-comma": [
       true,
@@ -36,7 +38,7 @@
       }
     ],
     "typedef": [
-      true, // noImplicitAny or strict covers the rest
+      true,  // noImplicitAny or strict tsconfig covers the rest
       "call-signature",
       "arrow-call-signature"
     ],

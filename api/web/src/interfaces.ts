@@ -1,48 +1,72 @@
 import type http from "http";
 
-export interface IEnterGameRequest {
+export interface EnterGameRequest {
   gameName?: string;
   playerName?: string;
 }
 
-export interface IMaybeSession extends http.IncomingMessage {
+export interface MaybeSession extends http.IncomingMessage {
   session?: {
     gameName?: string;
     playerName?: string;
   };
 }
-export interface ISession extends http.IncomingMessage {
+export interface Session extends http.IncomingMessage {
   session: {
     gameName: string;
     playerName: string;
   };
 }
 
-// messages that one client sends to the server
-// and the server relays back to everyone
-type BroadcastMessage =
-  | "chat-message"
-  | "start"
-  | "transfer-host"
-  | "change-settings";
-
-// messages only found from the client
-type ClientMessage =
-  | BroadcastMessage;
-
-// messages only found from the server
-type ServerMessage =
-  | BroadcastMessage
-  | "player-disappear"
-  | "init-player-list"
-  | "player-enter";
-
-export interface IClientMessage {
+interface Message {
+  message: string;
   data: unknown;
-  message: ClientMessage;
 }
 
-export interface IServerMessage {
-  data: unknown;
-  message: ServerMessage;
+interface ChatSendMessage extends Message {
+  message: "chat-send";
+  data: {
+    text: string;
+  };
 }
+
+interface ChatReceiveMessage extends Message {
+  message: "chat-receive";
+  data: {
+    author: string;
+    text: string;
+  };
+}
+
+interface InitPlayerListMessage extends Message {
+  message: "init-player-list";
+  data: {
+    [playerName: string]: number;
+  };
+}
+
+interface PlayerEnterMessage extends Message {
+  message: "player-enter";
+  data: {
+    player: string;
+    score: number;
+  };
+}
+
+interface PlayerDisappearMessage extends Message {
+  message: "player-disappear";
+  data: {
+    player: string;
+  };
+}
+
+// messages only sent from the client
+export type ClientMessage =
+  | ChatSendMessage;
+
+// messages only sent from the server
+export type ServerMessage =
+  | ChatReceiveMessage
+  | PlayerDisappearMessage
+  | InitPlayerListMessage
+  | PlayerEnterMessage;

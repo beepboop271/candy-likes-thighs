@@ -8,9 +8,9 @@ import websocket from "ws";
 import { Client } from "./client";
 import { debug, origin, port, redis, sessionSecret } from "./constants";
 import {
-  IEnterGameRequest,
-  IMaybeSession,
-  ISession,
+  EnterGameRequest,
+  MaybeSession,
+  Session,
 } from "./interfaces";
 import * as utils from "./utils";
 
@@ -60,7 +60,7 @@ app.post("/enter", async (req, res): Promise<void> => {
     return;
   }
 
-  let { gameName, playerName } = req.body as IEnterGameRequest;
+  let { gameName, playerName } = req.body as EnterGameRequest;
 
   if (playerName === undefined) {
     fail(res, 422, "Missing arguments");
@@ -129,7 +129,7 @@ server.on(
     // it's okay to cast, and it doesn't use the response
     // at all.
     sessionParser(req as express.Request, { } as express.Response, (): void => {
-      const session = (req as IMaybeSession).session;
+      const session = (req as MaybeSession).session;
 
       if (
         session === undefined
@@ -147,15 +147,10 @@ server.on(
   },
 );
 
-const clientPool: Set<Client> = new Set();
-
-wsServer.on("connection", (ws, req: ISession): void => {
+wsServer.on("connection", (ws, req: Session): void => {
   debug("websocket success");
   const client = new Client(ws, req);
-  clientPool.add(client);
-  client.on("end", (): void => {
-    clientPool.delete(client);
-  });
+  client.on("end", (): void => { console.log("end"); });
 });
 
 server.listen(port, (): void => { console.log("started"); });

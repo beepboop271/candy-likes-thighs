@@ -20,8 +20,8 @@ chatBox.onkeyup = function (ev) {
     this.value = "";
     if (msg.length > 0) {
       ws.send(JSON.stringify({
-        data: msg,
-        message: "chat-message",
+        message: "chat-send",
+        data: { text: msg },
       }));
     }
   }
@@ -75,7 +75,7 @@ ws.onmessage = function(e) {
     throw Error("invalid websocket message received");
   }
   switch (msg.message) {
-    case "chat-message":
+    case "chat-receive":
       addMessage(msg.data);
       break;
     case "init-player-list":
@@ -85,10 +85,12 @@ ws.onmessage = function(e) {
       }
       break;
     case "player-enter":
-      const [player, score] = Object.entries(msg.data)[0];
+      const {player, score} = msg.data;
       const localScore = scores.get(player);
-      if (localScore !== undefined && localScore !== score) {
-        updatePlayer(player, score);
+      if (localScore !== undefined) {
+        if (localScore !== score) {
+          updatePlayer(player, score);
+        }
       } else {
         addNewPlayer(player, score);
       }
