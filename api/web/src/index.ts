@@ -67,6 +67,7 @@ app.post("/enter", async (req, res): Promise<void> => {
     return;
   }
 
+  gameName = gameName?.trim();
   if (gameName === undefined || gameName === "") {
     gameName = utils.getGameName();
   } else if (!utils.filterId(gameName)) {

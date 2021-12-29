@@ -1,7 +1,5 @@
-export const filterId = (id: string): boolean =>
-  id.length >= 4 && id.length <= 50 && /^[a-zA-Z0-9\-_]+$/.test(id);
-export const filterName = (name: string): boolean =>
-  name.length > 0 && name.length <= 50 && /^[a-zA-Z0-9\-_]+$/.test(name);
+export const filterId = (id: string): boolean => /^[\w\-]{4,50}$/.test(id);
+export const filterName = (name: string): boolean => /^[\w\-]{1,50}$/.test(name);
 
 const randomChars = "abcdefghijklmnopqrstuvwxyz0123456789";
 export const getGameName = (): string => {
