@@ -9,3 +9,10 @@ export const getGameName = (): string => {
   }
   return s;
 };
+
+export const toNumberValues = (
+  obj: Record<string, string>,
+): Record<string, number> =>
+  Object.fromEntries(Object.entries(obj).map(
+    ([k, v]): [string, number] => [k, Number(v)],
+  ));

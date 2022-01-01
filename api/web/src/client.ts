@@ -4,6 +4,7 @@ import websocket from "ws";
 
 import { debug, redis } from "./constants";
 import { ClientMessage, ServerMessage, Session } from "./interfaces";
+import { toNumberValues } from "./utils";
 
 export class Client extends EventEmitter {
   public readonly ws: websocket;
@@ -118,9 +119,7 @@ export class Client extends EventEmitter {
         }
         this.message({
           message: "init-player-list",
-          data: Object.fromEntries(Object.entries(scores).map(
-            ([player, score]): [string, number] => [player, Number(score)],
-          )),
+          data: toNumberValues(scores),
         });
       })
       // joining player is host when they are first to join a
