@@ -2,16 +2,17 @@
 # discord-bot/cannedthighs/__init__.py and
 # discord-bot/cannedthighs/image_generator.py
 
-import base64
 import functools
 import io
 import json
 import os
+import pathlib
 import random
-from typing import Any, Dict, List, Literal, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
+import urllib.parse
 
 import dotenv
-from flask import abort, Flask, request
+from flask import abort, Flask, redirect, request, make_response
 from PIL import Image
 
 
@@ -67,15 +68,23 @@ MAX_SIZE_THRESHOLD = int(os.getenv("MAX_SIZE_THRESHOLD", "100"))
 
 app = Flask(__name__)
 images: Dict[str, Image.Image] = {}
+char_ids: List[str] = []
 
-for file in os.listdir(IMAGE_PATH):
-    name = file[:file.rindex(".")]  # remove the extension
-    images[name] = Image.open(f"{IMAGE_PATH}/{file}")
+for path in pathlib.Path(IMAGE_PATH).iterdir():
+    if not path.is_file():
+        continue
+    name = path.stem  # remove the extension
+    images[name] = Image.open(path)
+    char_ids.append(name)
     if app.env == "production":
         images[name].load()
 
 
 # image processing functions #####
+
+def _clamp(x, start, end):
+    # note, if end < start, returns start
+    return max(min(x, end), start)
 
 def _center_and_nudge(
     crop_x: int,
@@ -84,39 +93,16 @@ def _center_and_nudge(
     base_width: int,
     base_height: int,
 ) -> Tuple[int, int, int, int]:
-    # create a rect of width `crop_size` centered around
-    # `(crop_x, crop_y)`, ensuring that it stays within
+    # create a square rect of width `crop_size` centered
+    # around `(crop_x, crop_y)`, ensuring that it stays within
     # the rect `(0, 0, base_width, base_height)`
     half_size = crop_size//2
-    rect_lx = crop_x-half_size
-    rect_ly = crop_y-half_size
-    rect_ux = crop_x+half_size
-    rect_uy = crop_y+half_size
 
-    if crop_size >= base_width:
-        rect_lx = 0
-        rect_ux = base_width
-    elif rect_lx < 0:
-        rect_ux += abs(rect_lx)
-        rect_lx = 0
-    elif rect_ux > base_width:
-        rect_lx -= rect_ux-base_width
-        rect_ux = base_width
-
-    if crop_size >= base_height:
-        rect_ly = 0
-        rect_uy = base_height
-    elif rect_ly < 0:
-        rect_uy += abs(rect_ly)
-        rect_ly = 0
-    elif rect_uy > base_height:
-        rect_ly -= rect_uy-base_height
-        rect_uy = base_height
-
-    return (
-        rect_lx, rect_ly,
-        rect_ux, rect_uy,
-    )
+    x = _clamp(crop_x-half_size, 0, base_width-crop_size)
+    y = _clamp(crop_y-half_size, 0, base_height-crop_size)
+    w = min(crop_size, base_width)
+    h = min(crop_size, base_height)
+    return (x, y, x+w, y+h)
 
 
 def _get_opaque_percentage(im: Image.Image) -> float:
@@ -128,7 +114,7 @@ def _get_opaque_percentage(im: Image.Image) -> float:
     )
 
 
-def _get_bytes(im: Image.Image, mode: str) -> bytes:
+def _get_byte_stream(im: Image.Image, mode: str) -> Tuple[io.BytesIO, str]:
     render_settings = FILE_FORMATS[mode]
 
     img_buf = io.BytesIO(b"")
@@ -141,6 +127,7 @@ def _get_bytes(im: Image.Image, mode: str) -> bytes:
             if reduce > 1:
                 im = im.reduce(reduce)
             im.save(img_buf, setting["format"], **setting["args"])
+            format_used = setting["format"]
             break
     else:
         # else of for loop is executed when loop
@@ -150,13 +137,16 @@ def _get_bytes(im: Image.Image, mode: str) -> bytes:
         # default to this so at least *some* image
         # comes out, even if it's not intended
         im.save(img_buf, "webp", lossless=False, quality=70, method=0)
+        format_used = "webp"
 
-    return img_buf.getvalue()
+    img_buf.flush()
+    img_buf.seek(0)
+    return (img_buf, format_used)
 
 
 # fun decorators #################
 
-def convert_id_to_img(route_handler):
+def add_img_from_id(route_handler):
     @functools.wraps(route_handler)
     def wrapper(*args, **kwargs):
         # flask puts the variable route in kwargs
@@ -164,8 +154,6 @@ def convert_id_to_img(route_handler):
         if im is None:
             abort(404)
 
-        # replace the string with the actual image
-        del kwargs["char_id"]
         kwargs["im"] = im
 
         return route_handler(*args, **kwargs)
@@ -204,38 +192,12 @@ def convert_args(**arguments):
 
 # flask stuff ####################
 
-@app.route("/<char_id>", methods=["GET"])
-@convert_id_to_img
-@convert_args(
-    x=int, y=int, size=int,
-    mode=(str, DEFAULT_FORMAT),
-)
 def generate(im: Image.Image, x: int, y: int, size: int, mode: str):
-    if mode not in FILE_FORMATS:
-        abort(422)
-
     cropped = im.crop(_center_and_nudge(x, y, size, im.width, im.height))
+    return _get_byte_stream(cropped, mode)
 
-    return _get_bytes(cropped, mode)
 
-
-@app.route("/<char_id>/new", methods=["GET"])
-@convert_id_to_img
-@convert_args(
-    size=int,
-    threshold=(float, DEFAULT_THRESHOLD),
-    mode=(str, DEFAULT_FORMAT),
-)
 def generate_new(im: Image.Image, size: int, threshold: float, mode: str):
-    if threshold < 0 or threshold > 0.9:
-        abort(422)
-    if mode not in FILE_FORMATS:
-        abort(422)
-
-    # should prevent most infinite loops...
-    if threshold*size > MAX_SIZE_THRESHOLD:
-        abort(422)
-
     num_attempts = 0
     x_padding = PADDING
 
@@ -262,8 +224,87 @@ def generate_new(im: Image.Image, size: int, threshold: float, mode: str):
         elif num_attempts > 5:
             x_padding = min(x_padding + PADDING//2, int(im.width*0.4))
 
-    return {
-        "image": base64.b64encode(_get_bytes(cropped, mode)).decode("ascii"),
-        "x": x,
-        "y": y,
-    }
+    return (x, y, *_get_byte_stream(cropped, mode))
+
+
+def get_size(step: int, difficulty: int) -> int:
+    # todo: use difficulty
+    return (9*step + 34)*step + 69
+
+
+def get_random_char_id(charset: int) -> str:
+    # todo: use charset
+    return random.choice(char_ids)
+
+
+def get_link(
+    char_id: str, x: int, y: int,
+    step: int, difficulty: int,
+    mode: Optional[str]=None,
+) -> str:
+    args_dict = {"x": x, "y": y, "step": step, "difficulty": difficulty}
+    if mode is not None:
+        args_dict["mode"] = mode
+    return f"/{char_id}?{urllib.parse.urlencode(args_dict)}"
+
+
+def make_link_header(
+    char_id: str, x: int, y: int,
+    step: int, difficulty: int,
+    mode: Optional[str]=None,
+) -> str:
+    return f'<{get_link(char_id, x, y, step, difficulty, mode)}>; rel="next"'
+
+
+@app.route("/new", methods=["GET"])
+@convert_args(
+    difficulty=(int, 0),
+    charset=(int, 0),
+    mode=(str, DEFAULT_FORMAT),
+)
+def get_random_new(difficulty: int, charset: int, mode: str):
+    if mode not in FILE_FORMATS:
+        abort(422)
+
+    # if threshold < 0 or threshold > 0.9:
+    #     abort(422)
+    # # should prevent most infinite loops...
+    # if threshold*size > MAX_SIZE_THRESHOLD:
+    #     abort(422)
+
+    char_id = get_random_char_id(charset)
+    x, y, stream, format = generate_new(
+        images[char_id], get_size(0, difficulty), DEFAULT_THRESHOLD, mode,
+    )
+
+    return redirect(
+        get_link(char_id, x, y, 0, difficulty, mode),
+        code=303,
+    )
+
+
+@app.route("/<char_id>", methods=["GET"])
+@add_img_from_id
+@convert_args(
+    x=int, y=int, step=int, difficulty=int,
+    mode=(str, DEFAULT_FORMAT),
+)
+def generate_handler(
+    char_id: str, im: Image.Image, x: int, y: int,
+    step: int, difficulty: int, mode: str,
+):
+    if mode not in FILE_FORMATS:
+        abort(422)
+    size = get_size(step, difficulty)
+    if size < 1:
+        abort(422)
+
+    stream, format = generate(im, x, y, size, mode)
+    res = make_response(stream.getvalue())
+    res.headers["Content-Type"] = f"image/{format}"
+
+    if step < 9:  # todo: use difficulty
+        res.headers["Link"] = make_link_header(char_id, x, y, step+1, difficulty, mode)
+    return res
+    # return send_file(stream, mimetype=f"image/{format}")
+    # return _get_bytes(cropped, mode)
