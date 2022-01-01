@@ -11,19 +11,9 @@
             }
         },
         {
-            "maxsize": 1000,
-            "format": "webp",
-            "reduce": 1,
-            "args": {
-                "lossless": false,
-                "quality": 70,
-                "method": 0
-            }
-        },
-        {
             "maxsize": -1,
             "format": "webp",
-            "reduce": 2,
+            "reduce": 1,
             "args": {
                 "lossless": false,
                 "quality": 70,
