@@ -16,3 +16,6 @@ export const toNumberValues = (
   Object.fromEntries(Object.entries(obj).map(
     ([k, v]): [string, number] => [k, Number(v)],
   ));
+
+export const sleep = async (duration: number): Promise<void> =>
+  new Promise((res): void => { setTimeout(res, duration); });

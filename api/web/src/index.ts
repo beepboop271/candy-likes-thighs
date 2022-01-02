@@ -7,8 +7,10 @@ import websocket from "ws";
 
 import { Client } from "./client";
 import { debug, origin, port, redis, sessionSecret } from "./constants";
+import { Game } from "./game";
 import {
   EnterGameRequest,
+  GameSettings,
   MaybeSession,
   Session,
 } from "./interfaces";
@@ -75,14 +77,14 @@ app.post("/enter", async (req, res): Promise<void> => {
     return;
   }
 
-  const gameKey = `game:${gameName}`;
+  const key = `game:${gameName}`;
 
   // setup the game by setting currentRound = 0
   // if the currentRound key already exists on the requested
   // hash that means the game already exists, so join it
   // (use hsetnx instead of an exists...hset so that it is atomic)
-  if (await redis.hsetnx(gameKey, "currentRound", 0) === 0) {
-    if (await redis.hsetnx(`${gameKey}:scores`, playerName, 0) === 0) {
+  if (await redis.hsetnx(key, "currentRound", 0) === 0) {
+    if (await redis.hsetnx(`${key}:scores`, playerName, 0) === 0) {
       fail(res, 422, "Game exists, name taken");
       return;
     }
@@ -98,9 +100,46 @@ app.post("/enter", async (req, res): Promise<void> => {
   success(res);
 
   await redis.pipeline()
-    .hset(gameKey, "numRounds", 10)
-    .hset(`${gameKey}:scores`, playerName, 0)
+    // todo: proper settings
+    .hset(key, "rounds", 10, "interval", 5, "charset", 0, "difficulty", 0)
+    .hset(`${key}:scores`, playerName, 0)
     .exec();
+});
+
+app.post("/play", async (req, res): Promise<void> => {
+  const { gameName, playerName } = req.session;
+
+  if (gameName === undefined || playerName === undefined) {
+    fail(res, 401, "Not in a game");
+    return;
+  }
+
+  const key = `game:${gameName}`;
+
+  const host = await redis.hget(key, "host");
+  if (playerName !== host) {
+    fail(res, 403, "Not host");
+    return;
+  }
+
+  const gameInstance = Date.now();
+
+  // 10 seconds to start the game from here
+  if (await redis.set(`${key}:alive`, gameInstance, "EX", 10, "NX") === null) {
+    fail(res, 422, "Game already active");
+    return;
+  }
+
+  const settings = utils.toNumberValues(
+    await redis.hgetall(`game:${gameName}`),
+  ) as unknown as GameSettings;
+
+  new Game(gameName, settings, gameInstance)
+    .play()
+    .then(console.log)
+    .catch(console.log);
+
+  success(res);
 });
 
 const server = http.createServer(app);

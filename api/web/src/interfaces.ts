@@ -18,6 +18,13 @@ export interface Session extends http.IncomingMessage {
   };
 }
 
+export interface GameSettings {
+  rounds: number;
+  difficulty: number;
+  interval: number;
+  charset: number;
+}
+
 interface Message {
   message: string;
   data: unknown;
@@ -29,6 +36,10 @@ interface ChatSendMessage extends Message {
     text: string;
   };
 }
+
+// messages only sent from the client
+export type ClientMessage =
+  | ChatSendMessage;
 
 interface ChatReceiveMessage extends Message {
   message: "chat-receive";
@@ -67,9 +78,26 @@ interface NewHostMessage extends Message {
   };
 }
 
-// messages only sent from the client
-export type ClientMessage =
-  | ChatSendMessage;
+export interface RoundStartMessage extends Message {
+  message: "round-start";
+  data: {
+    number: number;
+  };
+}
+
+export interface NewImageMessage extends Message {
+  message: "new-image";
+  data: {
+    code: string;
+  };
+}
+
+export interface RoundEndMessage extends Message {
+  message: "round-end";
+  data: {
+    [playerName: string]: number;
+  };
+}
 
 // messages only sent from the server
 export type ServerMessage =
@@ -77,6 +105,9 @@ export type ServerMessage =
   | ChatReceiveMessage
   | PlayerDisappearMessage
   | InitPlayerListMessage
+  | RoundStartMessage
+  | NewImageMessage
+  | RoundEndMessage
   | PlayerEnterMessage;
 
 declare module "express-session" {
