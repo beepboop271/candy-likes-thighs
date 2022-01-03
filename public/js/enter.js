@@ -1,3 +1,5 @@
+const api = "127.0.0.1:8000";
+
 // perform client side validation so that
 // most users won't ever need the server to
 // yell at them for having symbols in their
@@ -95,7 +97,7 @@ async function enter() {
   }
 
   const resp = await fetch(
-    "http://127.0.0.1:8000/enter",
+    `http://${api}/enter`,
     {
       body: new URLSearchParams(new FormData(document.getElementById("enter-form"))),
       credentials: "include",
@@ -120,7 +122,7 @@ async function enterInvite() {
   form.append("gameName", inviteLink.searchParams.get("gameName"));
 
   const resp = await fetch(
-    "http://127.0.0.1:8000/enter",
+    `http://${api}/enter`,
     {
       body: form,
       credentials: "include",

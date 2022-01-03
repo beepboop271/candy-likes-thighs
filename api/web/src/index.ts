@@ -3,6 +3,7 @@ import express from "express";
 import expressSession from "express-session";
 import http from "http";
 import type net from "net";
+import fetch from "node-fetch";
 import websocket from "ws";
 
 import { Client } from "./client";
@@ -140,6 +141,39 @@ app.post("/play", async (req, res): Promise<void> => {
     .catch(console.log);
 
   success(res);
+});
+
+app.get("/images/:imageCode", async (req, res): Promise<void> => {
+  const { gameName, playerName } = req.session;
+
+  if (gameName === undefined || playerName === undefined) {
+    fail(res, 401, "Not in a game");
+    return;
+  }
+
+  const link = await redis.get(`images:${req.params.imageCode}`);
+  if (link === null) {
+    fail(res, 404, "No such image found");
+    return;
+  }
+
+  const imageRes = await fetch(link);
+
+  const type = imageRes.headers.get("Content-Type");
+  const length = imageRes.headers.get("Content-Length");
+
+  if (type === null || length === null) {
+    throw new Error(`get image ${link} had bad response`);
+  }
+
+  res
+    .header("Content-Type", type)
+    .header("Content-Length", length)
+    .header("Access-Control-Allow-Origin", origin)
+    // .header("Access-Control-Allow-Origin", "*")
+    .header("Access-Control-Allow-Credentials", "true");
+
+  imageRes.body.pipe(res);
 });
 
 const server = http.createServer(app);

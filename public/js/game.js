@@ -1,10 +1,16 @@
+const api = "127.0.0.1:8000";
+
 const title = document.getElementById("title");
 const playerList = document.getElementById("player-list");
 const chatMessages = document.getElementById("messages");
 const chatBox = document.getElementById("chat-box");
+const canvas = document.getElementById("canvas");
+canvas.width = 600;
+canvas.height = 600;
+const ctx = canvas.getContext("2d");
 
 const scores = new Map();
-const ws = new WebSocket("ws://127.0.0.1:8000");
+const ws = new WebSocket(`ws://${api}`);
 ws.onerror = () => {
   title.innerHTML = "<h1>Error connecting to game server. Are you in a game?</h1>\n<a href=..>Return to homepage</a>";
 };
@@ -56,7 +62,11 @@ function addMessage(msg) {
   if (chatMessages.childElementCount >= maxMessages) {
     chatMessages.firstElementChild.remove();
   }
-  chatMessages.innerHTML += `<div class="message">${msg.author}: ${msg.text}</div>`;
+  if (msg.author === "") {
+    chatMessages.innerHTML += `<div class="message">${msg.text}</div>`;
+  } else {
+    chatMessages.innerHTML += `<div class="message">${msg.author}: ${msg.text}</div>`;
+  }
 
   if (
     chatMessages.scrollTop+chatMessages.clientHeight+autoScrollThreshold
@@ -66,11 +76,50 @@ function addMessage(msg) {
   }
 }
 
+function updateImage(code) {
+  const im = new Image();
+  im.onload = function (ev) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+      im,
+      Math.floor(canvas.width/2)-Math.floor(im.width/2),
+      Math.floor(canvas.height/2)-Math.floor(im.height/2),
+      im.width,
+      im.height,
+    );
+  }
+  im.src = `http://${api}/images/${code}`;
+}
+
+function numberWithSign(n) {
+  return (n >= 0 ? "+" : "") + n.toString()
+}
+
+function updateScores(newScores) {
+  const changes = [];
+  for (const [player, newScore] of Object.entries(newScores)) {
+    const oldScore = scores.get(player);
+    if (oldScore !== undefined) {
+      changes.push([newScore - oldScore, player]);
+      updatePlayer(player, newScore);
+    } else {
+      console.log("unexpected new score appeared??");
+      addNewPlayer(player, newScore);
+    }
+  }
+  changes.sort((a, b) => a[0] - b[0]);
+  addMessage({
+    author: "",
+    text: `Score Changes:<br>${changes.map(v => `${v[1]}: ${numberWithSign(v[0])}`).join("<br>")}<hr>`,
+  });
+}
+
 ws.onmessage = function(e) {
   const msg = JSON.parse(e.data);
   if (msg.message === undefined) {
     throw Error("invalid websocket message received");
   }
+  console.log(msg);
   switch (msg.message) {
     case "chat-receive":
       addMessage(msg.data);
@@ -94,6 +143,16 @@ ws.onmessage = function(e) {
       break;
     case "player-disappear":
       removePlayer(msg.data.player);
+      break;
+    case "new-image":
+      updateImage(msg.data.code);
+      break;
+    case "round-start":
+      addMessage({ author: "", text: `Round ${msg.data.number} Start!`});
+      break;
+    case "round-end":
+      addMessage({ author: "", text: "<hr>Round Over!" });
+      updateScores(msg.data);
       break;
   }
 }
