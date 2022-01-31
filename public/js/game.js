@@ -5,9 +5,11 @@ const playerList = document.getElementById("player-list");
 const chatMessages = document.getElementById("messages");
 const chatBox = document.getElementById("chat-box");
 const canvas = document.getElementById("canvas");
+const startGameButton = document.getElementById("start-game");
 canvas.width = 600;
 canvas.height = 600;
 const ctx = canvas.getContext("2d");
+let isHost = false;
 
 const scores = new Map();
 const ws = new WebSocket(`ws://${api}`);
@@ -51,6 +53,14 @@ function removePlayer(player) {
     .getElementById(`player-${player}`)
     .remove();
   scores.delete(player);
+}
+
+function setHost(newIsHost) {
+  if (isHost === newIsHost) {  // if nothing changed
+    return;
+  }
+  isHost = newIsHost;
+  startGameButton.disabled = !newIsHost;
 }
 
 // max number of message history
@@ -114,6 +124,28 @@ function updateScores(newScores) {
   });
 }
 
+async function startGame() {
+  if (isHost !== true) {
+    console.log("cannot startGame not as host");
+    return;
+  }
+
+  // todo: change credentials to "same-origin"
+  const resp = await fetch(
+    `http://${api}/play`,
+    {
+      credentials: "include",
+      method: "POST",
+    },
+  );
+
+  if (resp.ok !== true) {
+    // all possible errors should have been prevented by a
+    // well behaved client
+    alert((await resp.json()).message);
+  }
+}
+
 ws.onmessage = function(e) {
   const msg = JSON.parse(e.data);
   if (msg.message === undefined) {
@@ -148,11 +180,21 @@ ws.onmessage = function(e) {
       updateImage(msg.data.code);
       break;
     case "round-start":
+      title.innerHTML = `<h1>Round ${msg.data.number}<h1>`;
       addMessage({ author: "", text: `Round ${msg.data.number} Start!`});
       break;
     case "round-end":
+      title.textContent = "";
       addMessage({ author: "", text: "<hr>Round Over!" });
       updateScores(msg.data);
+      break;
+    case "new-host":
+      setHost(false);
+      addMessage({ author: "", text: `${msg.data.player} is the host.`});
+      break;
+    case "you-are-host":
+      setHost(true);
+      addMessage({ author: "", text: `You are the host.`});
       break;
   }
 }

@@ -1,25 +1,65 @@
 import crypto from "crypto";
+import fs from "fs";
+import ioredis from "ioredis";
 import fetch, { Response } from "node-fetch";
 import url from "url";
 
 import { redis } from "./constants";
-import { GameSettings, NewImageMessage, RoundEndMessage, RoundStartMessage } from "./interfaces";
+import {
+  ChatReceiveMessage,
+  CorrectGuessMessage,
+  GameData,
+  GameSettings,
+  NewImageMessage,
+  RawChatReceiveMessage,
+  RoundEndMessage,
+  RoundStartMessage,
+} from "./interfaces";
 import { sleep, toNumberValues } from "./utils";
 
+const buildSetMap = (jsonData: GameData): Map<string, Set<string>> => {
+  const map: Map<string, Set<string>> = new Map();
+  for (const [charId, data] of Object.entries(jsonData)) {
+    map.set(charId, new Set([data.en_name, ...data.aliases]));
+  }
+  return map;
+};
+
+const charIdFromUrl = (link: url.URL): string => {
+  const first = link.pathname.substring(link.pathname.lastIndexOf("/")+1);
+  return first.substring(0, first.lastIndexOf("_"));
+};
+
+const gameData = buildSetMap(JSON.parse(
+  fs.readFileSync("gamedata/ak_data.json", "utf-8"),
+) as GameData);
+
 export class Game {
-  public readonly name: string;
-  public readonly gameKey: string;
-  public readonly settings: GameSettings;
-  public readonly instance: number;
+  private readonly name: string;
+  private readonly gameKey: string;
+  private readonly settings: GameSettings;
+  private readonly instance: number;
+  private readonly sub: ioredis.Redis;
+  private readonly ready: Promise<void>;
 
   public constructor(name: string, settings: GameSettings, instance: number) {
     this.name = name;
     this.gameKey = `game:${name}`;
     this.settings = settings;
     this.instance = instance;
+    this.sub = new ioredis({ lazyConnect: true });
+    this.ready = this.sub.connect();
+  }
+
+  private static getScore(msElapsed: number): number {
+    // todo: not hardcode?
+    return Math.floor((Math.exp(-msElapsed/20000 + 6) + 100)/10)*10;
   }
 
   public async play(): Promise<void> {
+    await this.ready;
+    await this.sub.subscribe(`${this.name}:raw`);
+
     let round = Number(await redis.hget(this.gameKey, "currentRound") ?? 0);
     if (round > this.settings.rounds) {
       await redis.hset(this.gameKey, "currentRound", 0);
@@ -54,10 +94,55 @@ export class Game {
       throw new Error("get image /new had no Location header");
     }
     const firstUrl = new url.URL(link);
-    const charId = firstUrl.pathname.substring(firstUrl.pathname.lastIndexOf("/")+1);
+    const charId = charIdFromUrl(firstUrl);
     let nextUrl: string | undefined = firstUrl.toString();
 
+    // players who have already correctly guessed this round.
+    // don't need to persist because only one web instance is
+    // necessary to do the round management (just make some
+    // api and database calls). if the game instance fails
+    // then there is no point remembering who had guessed that
+    // round since the round would need to be restarted
+    // anyways
+    const guessed: Set<string> = new Set();
+
     await redis.set(`${this.gameKey}:answer`, charId);
+    const roundStartTime = Date.now();
+    this.sub.on("message", async (_channel: string, msgStr: string): Promise<void> => {
+      const msg = JSON.parse(msgStr) as RawChatReceiveMessage;
+      const didGuess = guessed.has(msg.data.author);
+      if (didGuess || !(gameData.get(charId)?.has(msg.data.text.trim()) ?? false)) {
+        await redis.publish(
+          this.name,
+          JSON.stringify({
+            message: "chat-receive",
+            data: {
+              ...msg.data,
+              guessed: didGuess,
+            },
+          } as ChatReceiveMessage),
+        );
+      } else {
+        guessed.add(msg.data.author);
+        await redis.pipeline()
+          .hincrby(
+            `${this.gameKey}:scores`,
+            msg.data.author,
+            Game.getScore(Date.now() - roundStartTime),
+            // can get the new score if needed from here
+          )
+          .publish(
+            this.name,
+            JSON.stringify({
+              message: "correct-guess",
+              data: {
+                player: msg.data.author,
+              },
+            } as CorrectGuessMessage),
+          )
+          .exec();
+      }
+    });
 
     while (nextUrl !== undefined) {
       const startTime = Date.now();
@@ -93,6 +178,7 @@ export class Game {
       await this.consistency();
     }
 
+    this.sub.removeAllListeners("message");
     await redis.unlink(`${this.gameKey}:answer`);
 
     const endBroadcast: RoundEndMessage = {

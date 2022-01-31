@@ -41,11 +41,20 @@ interface ChatSendMessage extends Message {
 export type ClientMessage =
   | ChatSendMessage;
 
-interface ChatReceiveMessage extends Message {
+export interface RawChatReceiveMessage extends Message {
+  message: "raw-chat-receive";
+  data: {
+    author: string;
+    text: string;
+  };
+}
+
+export interface ChatReceiveMessage extends Message {
   message: "chat-receive";
   data: {
     author: string;
     text: string;
+    guessed: boolean;
   };
 }
 
@@ -99,15 +108,32 @@ export interface RoundEndMessage extends Message {
   };
 }
 
+export interface YouAreHostMessage extends Message {
+  message: "you-are-host";
+}
+
+export interface CorrectGuessMessage extends Message {
+  message: "correct-guess";
+  data: {
+    player: string;
+    // todo: could emit the new score but then it would be a
+    // bit hard to do score changes at the end of the round
+    // especially for someone who joins mid round, idk
+  };
+}
+
 // messages only sent from the server
 export type ServerMessage =
   | NewHostMessage
+  | RawChatReceiveMessage
   | ChatReceiveMessage
   | PlayerDisappearMessage
   | InitPlayerListMessage
   | RoundStartMessage
   | NewImageMessage
   | RoundEndMessage
+  | YouAreHostMessage
+  | CorrectGuessMessage
   | PlayerEnterMessage;
 
 declare module "express-session" {
@@ -115,4 +141,11 @@ declare module "express-session" {
       gameName?: string;
       playerName?: string;
   }
+}
+
+export interface GameData {
+  [charId: string]: {
+    en_name: string;
+    aliases: string[];
+  };
 }

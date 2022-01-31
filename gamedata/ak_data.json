@@ -1,0 +1,952 @@
+{
+  "char_285_medic2": {
+    "en_name": "lancet-2",
+    "aliases": [
+      "lancet",
+      "lancet2",
+      "lancet 2"
+    ]
+  },
+  "char_286_cast3": {
+    "en_name": "castle-3",
+    "aliases": [
+      "castle",
+      "castle3",
+      "castle 3"
+    ]
+  },
+  "char_376_therex": {
+    "en_name": "thermal-ex",
+    "aliases": [
+      "thermal",
+      "thermalex",
+      "thermal ex",
+      "thrm",
+      "thrmex",
+      "thrm ex"
+    ]
+  },
+  "char_502_nblade": {
+    "en_name": "yato",
+    "aliases": []
+  },
+  "char_500_noirc": {
+    "en_name": "noir corne",
+    "aliases": [
+      "noir",
+      "corne",
+      "noircorne"
+    ]
+  },
+  "char_503_rang": {
+    "en_name": "rangers",
+    "aliases": []
+  },
+  "char_501_durin": {
+    "en_name": "durin",
+    "aliases": []
+  },
+  "char_009_12fce": {
+    "en_name": "12f",
+    "aliases": []
+  },
+  "char_123_fang": {
+    "en_name": "fang",
+    "aliases": []
+  },
+  "char_240_wyvern": {
+    "en_name": "vanilla",
+    "aliases": []
+  },
+  "char_192_falco": {
+    "en_name": "plume",
+    "aliases": []
+  },
+  "char_208_melan": {
+    "en_name": "melantha",
+    "aliases": []
+  },
+  "char_281_popka": {
+    "en_name": "popukar",
+    "aliases": []
+  },
+  "char_209_ardign": {
+    "en_name": "cardigan",
+    "aliases": []
+  },
+  "char_122_beagle": {
+    "en_name": "beagle",
+    "aliases": []
+  },
+  "char_284_spot": {
+    "en_name": "spot",
+    "aliases": []
+  },
+  "char_124_kroos": {
+    "en_name": "kroos",
+    "aliases": []
+  },
+  "char_211_adnach": {
+    "en_name": "adnachiel",
+    "aliases": []
+  },
+  "char_121_lava": {
+    "en_name": "lava",
+    "aliases": []
+  },
+  "char_120_hibisc": {
+    "en_name": "hibiscus",
+    "aliases": []
+  },
+  "char_212_ansel": {
+    "en_name": "ansel",
+    "aliases": []
+  },
+  "char_210_stward": {
+    "en_name": "steward",
+    "aliases": []
+  },
+  "char_278_orchid": {
+    "en_name": "orchid",
+    "aliases": []
+  },
+  "char_141_nights": {
+    "en_name": "haze",
+    "aliases": []
+  },
+  "char_109_fmout": {
+    "en_name": "gitano",
+    "aliases": []
+  },
+  "char_253_greyy": {
+    "en_name": "greyy",
+    "aliases": []
+  },
+  "char_328_cammou": {
+    "en_name": "click",
+    "aliases": []
+  },
+  "char_469_indigo": {
+    "en_name": "indigo",
+    "aliases": []
+  },
+  "char_235_jesica": {
+    "en_name": "jessica",
+    "aliases": []
+  },
+  "char_126_shotst": {
+    "en_name": "meteor",
+    "aliases": []
+  },
+  "char_190_clour": {
+    "en_name": "vermeil",
+    "aliases": []
+  },
+  "char_133_mm": {
+    "en_name": "may",
+    "aliases": []
+  },
+  "char_118_yuki": {
+    "en_name": "shirayuki",
+    "aliases": [
+      "shira"
+    ]
+  },
+  "char_440_pinecn": {
+    "en_name": "pinecone",
+    "aliases": []
+  },
+  "char_302_glaze": {
+    "en_name": "ambriel",
+    "aliases": []
+  },
+  "char_366_acdrop": {
+    "en_name": "aciddrop",
+    "aliases": [
+      "acid"
+    ]
+  },
+  "char_198_blackd": {
+    "en_name": "courier",
+    "aliases": []
+  },
+  "char_149_scave": {
+    "en_name": "scavenger",
+    "aliases": []
+  },
+  "char_290_vigna": {
+    "en_name": "vigna",
+    "aliases": []
+  },
+  "char_151_myrtle": {
+    "en_name": "myrtle",
+    "aliases": []
+  },
+  "char_452_bstalk": {
+    "en_name": "beanstalk",
+    "aliases": []
+  },
+  "char_130_doberm": {
+    "en_name": "dobermann",
+    "aliases": []
+  },
+  "char_289_gyuki": {
+    "en_name": "matoimaru",
+    "aliases": [
+      "matoi"
+    ]
+  },
+  "char_159_peacok": {
+    "en_name": "conviction",
+    "aliases": []
+  },
+  "char_193_frostl": {
+    "en_name": "frostleaf",
+    "aliases": []
+  },
+  "char_127_estell": {
+    "en_name": "estelle",
+    "aliases": []
+  },
+  "char_185_frncat": {
+    "en_name": "mousse",
+    "aliases": []
+  },
+  "char_301_cutter": {
+    "en_name": "cutter",
+    "aliases": []
+  },
+  "char_337_utage": {
+    "en_name": "utage",
+    "aliases": []
+  },
+  "char_271_spikes": {
+    "en_name": "arene",
+    "aliases": []
+  },
+  "char_237_gravel": {
+    "en_name": "gravel",
+    "aliases": []
+  },
+  "char_272_strong": {
+    "en_name": "jaye",
+    "aliases": []
+  },
+  "char_236_rope": {
+    "en_name": "rope",
+    "aliases": []
+  },
+  "char_117_myrrh": {
+    "en_name": "myrrh",
+    "aliases": []
+  },
+  "char_187_ccheal": {
+    "en_name": "gavial",
+    "aliases": []
+  },
+  "char_298_susuro": {
+    "en_name": "sussurro",
+    "aliases": [
+      "sus"
+    ]
+  },
+  "char_181_flower": {
+    "en_name": "perfumer",
+    "aliases": []
+  },
+  "char_385_finlpp": {
+    "en_name": "purestream",
+    "aliases": []
+  },
+  "char_199_yak": {
+    "en_name": "matterhorn",
+    "aliases": []
+  },
+  "char_150_snakek": {
+    "en_name": "cuora",
+    "aliases": []
+  },
+  "char_381_bubble": {
+    "en_name": "bubble",
+    "aliases": []
+  },
+  "char_196_sunbr": {
+    "en_name": "gummy",
+    "aliases": [
+      "\u0433\u0443\u043c"
+    ]
+  },
+  "char_260_durnar": {
+    "en_name": "dur-nar",
+    "aliases": [
+      "durnar",
+      "dur nar"
+    ]
+  },
+  "char_110_deepcl": {
+    "en_name": "deepcolor",
+    "aliases": []
+  },
+  "char_183_skgoat": {
+    "en_name": "earthspirit",
+    "aliases": []
+  },
+  "char_258_podego": {
+    "en_name": "podenco",
+    "aliases": []
+  },
+  "char_355_ethan": {
+    "en_name": "ethan",
+    "aliases": []
+  },
+  "char_277_sqrrel": {
+    "en_name": "shaw",
+    "aliases": []
+  },
+  "char_128_plosis": {
+    "en_name": "ptilopsis",
+    "aliases": [
+      "ptil",
+      "ptilo"
+    ]
+  },
+  "char_275_breeze": {
+    "en_name": "breeze",
+    "aliases": []
+  },
+  "char_115_headbr": {
+    "en_name": "zima",
+    "aliases": [
+      "\u0437\u0438\u043c\u0430"
+    ]
+  },
+  "char_102_texas": {
+    "en_name": "texas",
+    "aliases": []
+  },
+  "char_349_chiave": {
+    "en_name": "chiave",
+    "aliases": []
+  },
+  "char_261_sddrag": {
+    "en_name": "reed",
+    "aliases": []
+  },
+  "char_401_elysm": {
+    "en_name": "elysium",
+    "aliases": []
+  },
+  "char_308_swire": {
+    "en_name": "swire",
+    "aliases": []
+  },
+  "char_265_sophia": {
+    "en_name": "whislash",
+    "aliases": []
+  },
+  "char_106_franka": {
+    "en_name": "franka",
+    "aliases": []
+  },
+  "char_131_flameb": {
+    "en_name": "flamebringer",
+    "aliases": [
+      "fb"
+    ]
+  },
+  "char_155_tiger": {
+    "en_name": "indra",
+    "aliases": []
+  },
+  "char_415_flint": {
+    "en_name": "flint",
+    "aliases": []
+  },
+  "char_140_whitew": {
+    "en_name": "lappland",
+    "aliases": [
+      "lapp"
+    ]
+  },
+  "char_294_ayer": {
+    "en_name": "ayerscarpe",
+    "aliases": [
+      "ayer",
+      "ayers"
+    ]
+  },
+  "char_252_bibeak": {
+    "en_name": "bibeak",
+    "aliases": []
+  },
+  "char_459_tachak": {
+    "en_name": "tachanka",
+    "aliases": []
+  },
+  "char_143_ghost": {
+    "en_name": "specter",
+    "aliases": [
+      "spectre"
+    ]
+  },
+  "char_356_broca": {
+    "en_name": "broca",
+    "aliases": []
+  },
+  "char_274_astesi": {
+    "en_name": "astesia",
+    "aliases": []
+  },
+  "char_333_sidero": {
+    "en_name": "sideroca",
+    "aliases": []
+  },
+  "char_475_akafyu": {
+    "en_name": "akafuyu",
+    "aliases": []
+  },
+  "char_421_crow": {
+    "en_name": "la pluma",
+    "aliases": [
+      "pluma",
+      "lapluma"
+    ]
+  },
+  "char_486_takila": {
+    "en_name": "tequila",
+    "aliases": []
+  },
+  "char_129_bluep": {
+    "en_name": "blue poison",
+    "aliases": [
+      "bp"
+    ]
+  },
+  "char_204_platnm": {
+    "en_name": "platinum",
+    "aliases": [
+      "plat"
+    ]
+  },
+  "char_367_swllow": {
+    "en_name": "greythroat",
+    "aliases": []
+  },
+  "char_365_aprl": {
+    "en_name": "april",
+    "aliases": []
+  },
+  "char_219_meteo": {
+    "en_name": "meteorite",
+    "aliases": []
+  },
+  "char_379_sesa": {
+    "en_name": "sesa",
+    "aliases": []
+  },
+  "char_279_excu": {
+    "en_name": "executor",
+    "aliases": [
+      "exec"
+    ]
+  },
+  "char_346_aosta": {
+    "en_name": "aosta",
+    "aliases": []
+  },
+  "char_002_amiya": {
+    "en_name": "amiya",
+    "aliases": []
+  },
+  "char_405_absin": {
+    "en_name": "absinthe",
+    "aliases": []
+  },
+  "char_411_tomimi": {
+    "en_name": "tomimi",
+    "aliases": []
+  },
+  "char_166_skfire": {
+    "en_name": "skyfire",
+    "aliases": [
+      "thighfire"
+    ]
+  },
+  "char_306_leizi": {
+    "en_name": "leizi",
+    "aliases": []
+  },
+  "char_344_beewax": {
+    "en_name": "beeswax",
+    "aliases": []
+  },
+  "char_373_lionhd": {
+    "en_name": "leonhardt",
+    "aliases": []
+  },
+  "char_388_mint": {
+    "en_name": "mint",
+    "aliases": []
+  },
+  "char_338_iris": {
+    "en_name": "iris",
+    "aliases": []
+  },
+  "char_1011_lava2": {
+    "en_name": "purgatory",
+    "aliases": [
+      "lava alter"
+    ]
+  },
+  "char_242_otter": {
+    "en_name": "mayer",
+    "aliases": []
+  },
+  "char_336_folivo": {
+    "en_name": "scene",
+    "aliases": []
+  },
+  "char_108_silent": {
+    "en_name": "silence",
+    "aliases": []
+  },
+  "char_171_bldsk": {
+    "en_name": "warfarin",
+    "aliases": []
+  },
+  "char_345_folnic": {
+    "en_name": "folinic",
+    "aliases": []
+  },
+  "char_348_ceylon": {
+    "en_name": "ceylon",
+    "aliases": []
+  },
+  "char_436_whispr": {
+    "en_name": "whisperain",
+    "aliases": []
+  },
+  "char_402_tuye": {
+    "en_name": "tuye",
+    "aliases": []
+  },
+  "char_148_nearl": {
+    "en_name": "nearl",
+    "aliases": []
+  },
+  "char_226_hmau": {
+    "en_name": "hung",
+    "aliases": []
+  },
+  "char_144_red": {
+    "en_name": "projekt red",
+    "aliases": [
+      "red",
+      "projektred"
+    ]
+  },
+  "char_243_waaifu": {
+    "en_name": "waai fu",
+    "aliases": [
+      "waaifu"
+    ]
+  },
+  "char_214_kafka": {
+    "en_name": "kafka",
+    "aliases": []
+  },
+  "char_455_nothin": {
+    "en_name": "mr.nothing",
+    "aliases": [
+      "mr. nothing",
+      "mr nothing",
+      "mrnothing",
+      "nothing"
+    ]
+  },
+  "char_107_liskam": {
+    "en_name": "liskarm",
+    "aliases": [
+      "lisk"
+    ]
+  },
+  "char_201_moeshd": {
+    "en_name": "croissant",
+    "aliases": []
+  },
+  "char_325_bison": {
+    "en_name": "bison",
+    "aliases": []
+  },
+  "char_163_hpsts": {
+    "en_name": "vulcan",
+    "aliases": []
+  },
+  "char_378_asbest": {
+    "en_name": "asbestos",
+    "aliases": []
+  },
+  "char_457_blitz": {
+    "en_name": "blitz",
+    "aliases": []
+  },
+  "char_304_zebra": {
+    "en_name": "heavyrain",
+    "aliases": []
+  },
+  "char_145_prove": {
+    "en_name": "provence",
+    "aliases": []
+  },
+  "char_158_milu": {
+    "en_name": "firewatch",
+    "aliases": []
+  },
+  "char_218_cuttle": {
+    "en_name": "andreana",
+    "aliases": []
+  },
+  "char_363_toddi": {
+    "en_name": "toddifons",
+    "aliases": [
+      "toddi"
+    ]
+  },
+  "char_173_slchan": {
+    "en_name": "cliffheart",
+    "aliases": [
+      "cliff"
+    ]
+  },
+  "char_383_snsant": {
+    "en_name": "snowsant",
+    "aliases": []
+  },
+  "char_174_slbell": {
+    "en_name": "pramanix",
+    "aliases": [
+      "pram"
+    ]
+  },
+  "char_254_vodfox": {
+    "en_name": "shamare",
+    "aliases": []
+  },
+  "char_195_glassb": {
+    "en_name": "istina",
+    "aliases": [
+      "\u0438\u0441\u0442\u0438\u043d\u0430"
+    ]
+  },
+  "char_326_glacus": {
+    "en_name": "glaucus",
+    "aliases": []
+  },
+  "char_101_sora": {
+    "en_name": "sora",
+    "aliases": []
+  },
+  "char_343_tknogi": {
+    "en_name": "tsukinogi",
+    "aliases": [
+      "tsuki"
+    ]
+  },
+  "char_215_mantic": {
+    "en_name": "manticore",
+    "aliases": [
+      "mant"
+    ]
+  },
+  "char_478_kirara": {
+    "en_name": "kirara",
+    "aliases": []
+  },
+  "char_241_panda": {
+    "en_name": "feater",
+    "aliases": []
+  },
+  "char_451_robin": {
+    "en_name": "robin",
+    "aliases": []
+  },
+  "char_458_rfrost": {
+    "en_name": "frost",
+    "aliases": []
+  },
+  "char_369_bena": {
+    "en_name": "bena",
+    "aliases": []
+  },
+  "char_103_angel": {
+    "en_name": "exusiai",
+    "aliases": [
+      "exu"
+    ]
+  },
+  "char_332_archet": {
+    "en_name": "archetto",
+    "aliases": [
+      "arch",
+      "arche"
+    ]
+  },
+  "char_456_ash": {
+    "en_name": "ash",
+    "aliases": []
+  },
+  "char_340_shwaz": {
+    "en_name": "schwarz",
+    "aliases": []
+  },
+  "char_113_cqbw": {
+    "en_name": "w",
+    "aliases": []
+  },
+  "char_197_poca": {
+    "en_name": "rosa",
+    "aliases": [
+      "\u0440\u043e\u0441\u0430",
+      "poca"
+    ]
+  },
+  "char_391_rosmon": {
+    "en_name": "rosmontis",
+    "aliases": [
+      "ros"
+    ]
+  },
+  "char_1013_chen2": {
+    "en_name": "ch'en the holungday",
+    "aliases": [
+      "holungday",
+      "sniper chen",
+      "water chen",
+      "chalter",
+      "chen alter",
+      "sniper ch'en",
+      "water ch'en",
+      "ch'en alter"
+    ]
+  },
+  "char_112_siege": {
+    "en_name": "siege",
+    "aliases": []
+  },
+  "char_222_bpipe": {
+    "en_name": "bagpipe",
+    "aliases": [
+      "bag"
+    ]
+  },
+  "char_362_saga": {
+    "en_name": "saga",
+    "aliases": []
+  },
+  "char_134_ifrit": {
+    "en_name": "ifrit",
+    "aliases": []
+  },
+  "char_213_mostma": {
+    "en_name": "mostima",
+    "aliases": [
+      "most"
+    ]
+  },
+  "char_180_amgoat": {
+    "en_name": "eyjafjalla",
+    "aliases": [
+      "eyja"
+    ]
+  },
+  "char_2013_cerber": {
+    "en_name": "ceobe",
+    "aliases": []
+  },
+  "char_2015_dusk": {
+    "en_name": "dusk",
+    "aliases": []
+  },
+  "char_472_pasngr": {
+    "en_name": "passenger",
+    "aliases": [
+      "pass"
+    ]
+  },
+  "char_426_billro": {
+    "en_name": "carnelian",
+    "aliases": []
+  },
+  "char_291_aglina": {
+    "en_name": "angelina",
+    "aliases": [
+      "ange"
+    ]
+  },
+  "char_358_lisa": {
+    "en_name": "suzuran",
+    "aliases": []
+  },
+  "char_248_mgllan": {
+    "en_name": "magallan",
+    "aliases": [
+      "mag"
+    ]
+  },
+  "char_1012_skadi2": {
+    "en_name": "skadi the corrupting heart",
+    "aliases": [
+      "corrupting heart",
+      "supporter skadi",
+      "red skadi",
+      "skalter",
+      "skadi alter"
+    ]
+  },
+  "char_250_phatom": {
+    "en_name": "phantom",
+    "aliases": []
+  },
+  "char_400_weedy": {
+    "en_name": "weedy",
+    "aliases": []
+  },
+  "char_225_haak": {
+    "en_name": "aak",
+    "aliases": []
+  },
+  "char_474_glady": {
+    "en_name": "gladiia",
+    "aliases": [
+      "gladia"
+    ]
+  },
+  "char_437_mizuki": {
+    "en_name": "mizuki",
+    "aliases": []
+  },
+  "char_147_shining": {
+    "en_name": "shining",
+    "aliases": []
+  },
+  "char_179_cgbird": {
+    "en_name": "nightingale",
+    "aliases": [
+      "ng"
+    ]
+  },
+  "char_003_kalts": {
+    "en_name": "kal'tsit",
+    "aliases": [
+      "kal",
+      "kalt",
+      "kaltsit",
+      "kal tsit"
+    ]
+  },
+  "char_136_hsguma": {
+    "en_name": "hoshiguma",
+    "aliases": [
+      "hoshi"
+    ]
+  },
+  "char_202_demkni": {
+    "en_name": "saria",
+    "aliases": []
+  },
+  "char_423_blemsh": {
+    "en_name": "blemishine",
+    "aliases": [
+      "blem",
+      "blemi"
+    ]
+  },
+  "char_2014_nian": {
+    "en_name": "nian",
+    "aliases": []
+  },
+  "char_311_mudrok": {
+    "en_name": "mudrock",
+    "aliases": [
+      "mud"
+    ]
+  },
+  "char_416_zumama": {
+    "en_name": "eunectes",
+    "aliases": [
+      "eune",
+      "eunec"
+    ]
+  },
+  "char_264_f12yin": {
+    "en_name": "mountain",
+    "aliases": []
+  },
+  "char_172_svrash": {
+    "en_name": "silverash",
+    "aliases": [
+      "sa"
+    ]
+  },
+  "char_293_thorns": {
+    "en_name": "thorns",
+    "aliases": []
+  },
+  "char_010_chen": {
+    "en_name": "ch'en",
+    "aliases": [
+      "chen",
+      "ch en"
+    ]
+  },
+  "char_017_huang": {
+    "en_name": "blaze",
+    "aliases": []
+  },
+  "char_350_surtr": {
+    "en_name": "surtr",
+    "aliases": []
+  },
+  "char_188_helage": {
+    "en_name": "hellagur",
+    "aliases": [
+      "hell"
+    ]
+  },
+  "char_485_pallas": {
+    "en_name": "pallas",
+    "aliases": []
+  },
+  "char_230_savage": {
+    "en_name": "savage",
+    "aliases": []
+  },
+  "char_282_catap": {
+    "en_name": "catapult",
+    "aliases": []
+  },
+  "char_283_midn": {
+    "en_name": "midnight",
+    "aliases": []
+  },
+  "char_137_brownb": {
+    "en_name": "beehunter",
+    "aliases": []
+  },
+  "char_347_jaksel": {
+    "en_name": "jackie",
+    "aliases": []
+  },
+  "char_164_nightm": {
+    "en_name": "nightmare",
+    "aliases": []
+  },
+  "char_220_grani": {
+    "en_name": "grani",
+    "aliases": []
+  },
+  "char_263_skadi": {
+    "en_name": "skadi",
+    "aliases": []
+  }
+}

@@ -3,7 +3,7 @@ import ioredis from "ioredis";
 import websocket from "ws";
 
 import { debug, redis } from "./constants";
-import { ClientMessage, ServerMessage, Session } from "./interfaces";
+import { ClientMessage, RawChatReceiveMessage, ServerMessage, Session } from "./interfaces";
 import { toNumberValues } from "./utils";
 
 export class Client extends EventEmitter {
@@ -11,6 +11,7 @@ export class Client extends EventEmitter {
   public readonly sub: ioredis.Redis;
   public readonly gameName: string;
   public readonly playerName: string;
+  private guessed: boolean;
 
   public constructor(ws: websocket, req: Session) {
     super();
@@ -20,10 +21,45 @@ export class Client extends EventEmitter {
 
     this.gameName = req.session.gameName;
     this.playerName = req.session.playerName;
+    this.guessed = false;
 
     this.sub.on("message", (_channel: string, msg: string): void => {
       debug(`${this.playerName} received pubsub: ${msg}`);
-      this.message(msg);
+
+      const msgObj = JSON.parse(msg) as ServerMessage;
+      switch (msgObj.message) {
+        case "new-host":
+          if (msgObj.data.player === this.playerName) {
+            this.message({
+              message: "you-are-host",
+              // looks like ts needs this to infer type.
+              // doesn't matter, since JSON.stringify will
+              // get rid of it
+              data: undefined,
+            });
+          }
+          break;
+        case "correct-guess":
+          if (msgObj.data.player === this.playerName) {
+            this.guessed = true;
+          }
+          this.message(msg);
+          break;
+        case "round-end":
+          this.guessed = false;
+          this.message(msg);
+          break;
+        case "chat-receive":
+          if (msgObj.data.guessed && !this.guessed) {
+            // if the sender guessed but this player hasn't,
+            // don't deliver the message
+            break;
+          }
+          this.message(msg);
+          break;
+        default:
+          this.message(msg);
+      }
     });
 
     this.ws.on("close", async (_code, _reason): Promise<void> => {
@@ -74,13 +110,16 @@ export class Client extends EventEmitter {
       debug(msg.message);
       switch (msg.message) {
         case "chat-send":
-          await this.broadcast({
-            message: "chat-receive",
-            data: {
-              author: this.playerName,
-              text: msg.data.text,
-            },
-          });
+          await redis.publish(
+            `${this.gameName}:raw`,
+            JSON.stringify({
+              message: "raw-chat-receive",
+              data: {
+                author: this.playerName,
+                text: msg.data.text,
+              },
+            } as RawChatReceiveMessage),
+          );
           break;
         default:
           // unknown type
@@ -128,16 +167,22 @@ export class Client extends EventEmitter {
         if (err !== null) {
           throw err;
         }
-        const host =
-          res === 1
-          ? this.playerName  // host did not exist, must be what we set
-          : (await redis.hget(`game:${this.gameName}`, "host"))!;  // host must exist
-        this.message({
-          message: "new-host",
-          data: {
-            player: host,
-          },
-        });
+        if (res === 1) {
+          // host did not exist, must be what we set
+          this.message({
+            message: "you-are-host",
+            data: undefined,
+          });
+        } else {
+          // host must exist
+          const host = (await redis.hget(`game:${this.gameName}`, "host"))!;
+          this.message({
+            message: "new-host",
+            data: {
+              player: host,
+            },
+          });
+        }
       })
       // @ts-expect-error - types for ioredis suck
       .zadd(`game:${this.gameName}:players`, Date.now(), this.playerName, async (err, res): Promise<void> => {
