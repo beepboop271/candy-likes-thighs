@@ -26,6 +26,9 @@ chatBox.onkeydown = function (ev) {
   if (ev.key == "Enter" && !ev.shiftKey) {
     ev.preventDefault()
     const msg = this.value.trim();
+    if (!/^[\s\w\-\'\.\,]+$/.test(msg)) {
+      return;
+    }
     this.value = "";
     if (msg.length > 0) {
       ws.send(JSON.stringify({
@@ -72,11 +75,21 @@ function addMessage(msg) {
   if (chatMessages.childElementCount >= maxMessages) {
     chatMessages.firstElementChild.remove();
   }
+
+  const msgElement = document.createElement("div");
+  msgElement.classList.add("message");
+
   if (msg.author === "") {
-    chatMessages.innerHTML += `<div class="message">${msg.text}</div>`;
+    msgElement.innerHTML = msg.text;
+    msgElement.classList.add("system");
   } else {
-    chatMessages.innerHTML += `<div class="message">${msg.author}: ${msg.text}</div>`;
+    msgElement.textContent = `${msg.author}: ${msg.text}`;
   }
+  if (msg.guessed) {
+    msgElement.classList.add("guessed");
+  }
+
+  chatMessages.appendChild(msgElement);
 
   if (
     chatMessages.scrollTop+chatMessages.clientHeight+autoScrollThreshold
@@ -146,6 +159,17 @@ async function startGame() {
   }
 }
 
+function resetCorrect() {
+  for (const child of playerList.children) {
+    child.classList.remove("guessed");
+  }
+}
+
+function setCorrect(player) {
+  const element = document.getElementById(`player-${player}`);
+  element.classList.add("guessed");
+}
+
 ws.onmessage = function(e) {
   const msg = JSON.parse(e.data);
   if (msg.message === undefined) {
@@ -181,6 +205,7 @@ ws.onmessage = function(e) {
       break;
     case "round-start":
       title.innerHTML = `<h1>Round ${msg.data.number}<h1>`;
+      resetCorrect();
       addMessage({ author: "", text: `Round ${msg.data.number} Start!`});
       break;
     case "round-end":
@@ -195,6 +220,14 @@ ws.onmessage = function(e) {
     case "you-are-host":
       setHost(true);
       addMessage({ author: "", text: `You are the host.`});
+      break;
+    case "correct-guess":
+      setCorrect(msg.data.player);
+      addMessage({
+        author: "",
+        text: `${msg.data.player} guessed correctly!`,
+        guessed: true,
+      });
       break;
   }
 }

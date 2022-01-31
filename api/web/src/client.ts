@@ -4,7 +4,7 @@ import websocket from "ws";
 
 import { debug, redis } from "./constants";
 import { ClientMessage, RawChatReceiveMessage, ServerMessage, Session } from "./interfaces";
-import { toNumberValues } from "./utils";
+import { filterMessage, toNumberValues } from "./utils";
 
 export class Client extends EventEmitter {
   public readonly ws: websocket;
@@ -110,13 +110,17 @@ export class Client extends EventEmitter {
       debug(msg.message);
       switch (msg.message) {
         case "chat-send":
+          const text = msg.data.text.trim();
+          if (!filterMessage(text)) {
+            break;
+          }
           await redis.publish(
             `${this.gameName}:raw`,
             JSON.stringify({
               message: "raw-chat-receive",
               data: {
                 author: this.playerName,
-                text: msg.data.text,
+                text,
               },
             } as RawChatReceiveMessage),
           );

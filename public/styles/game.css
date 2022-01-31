@@ -1,3 +1,8 @@
+#content {
+  display: flex;
+  flex-direction: column;
+}
+
 #player-list {
   display: flex;
   flex-direction: column-reverse;
@@ -23,4 +28,12 @@
 #messages {
   height: 500px;
   overflow-y: auto;
+}
+
+.guessed {
+  color: #070;
+}
+
+.system {
+  font-weight: bold;
 }

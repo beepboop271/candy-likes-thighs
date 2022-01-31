@@ -13,25 +13,32 @@
       JavaScript is required to run this game
     </h1>
   </noscript>
-  <div id="title">
-    <h1>Waiting for players</h1>
-  </div>
-  <div id="game">
-    <div id="player-list">
+  <div id="content">
+    <div id="title">
+      <h1>Waiting for players</h1>
     </div>
-    <div id="main">
-      <canvas id="canvas"></canvas>
-    </div>
-    <div id="chat">
-      <div id="messages">
+    <div id="game">
+      <div id="player-list">
       </div>
-      <form id="chat-form">
-        <textarea id="chat-box" name="chatBox"></textarea>
-      </form>
+      <div id="main">
+        <canvas id="canvas"></canvas>
+      </div>
+      <div id="chat">
+        <div id="messages">
+        </div>
+        <form id="chat-form">
+          <textarea id="chat-box" name="chatBox"></textarea>
+        </form>
+      </div>
     </div>
-  </div>
-  <div id="below-game">
-    <input type="button" id="start-game" value="Start Game" onclick="startGame()" disabled>
+    <div id="below-game">
+      <p>
+        Chat messages can only contain alphanumeric characters (a-z, A-Z, 0-9),
+        whitespace (spaces, newlines), as well as: <code>- ' . ,</code> and
+        must contain at least one non-space character.
+      </p>
+      <input type="button" id="start-game" value="Start Game" onclick="startGame()" disabled>
+    </div>
   </div>
 </body>
 </html>

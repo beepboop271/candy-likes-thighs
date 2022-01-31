@@ -1,5 +1,6 @@
 export const filterId = (id: string): boolean => /^[\w\-]{4,50}$/.test(id);
 export const filterName = (name: string): boolean => /^[\w\-]{1,50}$/.test(name);
+export const filterMessage = (text: string): boolean => /^[\s\w\-\'\.\,]+$/.test(text);
 
 const randomChars = "abcdefghijklmnopqrstuvwxyz0123456789";
 export const getGameName = (): string => {
