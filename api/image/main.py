@@ -299,12 +299,23 @@ def generate_handler(
     if size < 1:
         abort(422)
 
-    stream, format = generate(im, x, y, size, mode)
-    res = make_response(stream.getvalue())
-    res.headers["Content-Type"] = f"image/{format}"
+    if request.method != "HEAD":
+        stream, format = generate(im, x, y, size, mode)
+        res = make_response(stream.getvalue())
+        # can't really know the image type without knowing
+        # what format was used on the resulting image but
+        # we don't want to compute the image and we really
+        # only need the Link header so...
+        res.headers["Content-Type"] = f"image/{format}"
+    else:
+        res = make_response()
 
-    if step < 9:  # todo: use difficulty
+    if step < 5:  # todo: use difficulty
         res.headers["Link"] = make_link_header(char_id, x, y, step+1, difficulty, mode)
     return res
     # return send_file(stream, mimetype=f"image/{format}")
     # return _get_bytes(cropped, mode)
+
+
+if __name__ == "__main__":
+    app.run(host="localhost", port=5000, debug=True)

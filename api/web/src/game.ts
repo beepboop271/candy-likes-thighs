@@ -161,7 +161,7 @@ export class Game {
         .exec();
 
       // interesting ts can't infer this (because of the loop?)
-      const res: Response = await fetch(nextUrl);
+      const res: Response = await fetch(nextUrl, { method: "HEAD" });
 
       const next = res.headers.get("Link")
                      ?.match(/<([^>]+)>; rel="next"/)
