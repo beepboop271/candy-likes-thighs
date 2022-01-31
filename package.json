@@ -33,7 +33,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx tsc && node api/web/dist/index.js",
-    "image": "pipenv run gunicorn -w 1 -b localhost:5000 api.image.main:app"
+    "image": "pipenv run gunicorn api.image.main:app"
   },
   "repository": {
     "type": "git",
