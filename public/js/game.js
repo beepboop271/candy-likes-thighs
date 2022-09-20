@@ -12,7 +12,7 @@ const ctx = canvas.getContext("2d");
 let isHost = false;
 
 const scores = new Map();
-const ws = new WebSocket(`ws://${api}`);
+const ws = new WebSocket(`ws://${api}/ws`);
 ws.onerror = () => {
   title.innerHTML = "<h1>Error connecting to game server. Are you in a game?</h1>\n<a href=..>Return to homepage</a>";
 };

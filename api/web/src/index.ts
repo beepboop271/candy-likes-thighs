@@ -43,7 +43,7 @@ const fail = (res: express.Response, code: number, message: string): void => {
     .header("Access-Control-Allow-Credentials", "true")
     .json({
       message,
-      status: "error",
+      status: "error",  // todo: status is pointless
     });
 };
 
@@ -102,7 +102,7 @@ app.post("/enter", async (req, res): Promise<void> => {
 
   await redis.pipeline()
     // todo: proper settings
-    .hset(key, "rounds", 10, "interval", 5, "charset", 0, "difficulty", 0)
+    .hset(key, "rounds", 5, "interval", 5, "charset", 0, "difficulty", 0)
     .hset(`${key}:scores`, playerName, 0)
     .exec();
 });
@@ -169,6 +169,8 @@ app.get("/images/:imageCode", async (req, res): Promise<void> => {
   res
     .header("Content-Type", type)
     .header("Content-Length", length)
+    // https://stackoverflow.com/questions/35416277/allow-reverse-proxy-cache-but-not-browser-cache
+    .header("Cache-Control", "public, max-age=0, s-maxage=20")
     .header("Access-Control-Allow-Origin", origin)
     // .header("Access-Control-Allow-Origin", "*")
     .header("Access-Control-Allow-Credentials", "true");
